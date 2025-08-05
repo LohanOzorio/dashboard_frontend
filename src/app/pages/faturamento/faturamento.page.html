@@ -1,5 +1,18 @@
-<p>Faturamento</p>
-<app-chart-card></app-chart-card>
-<app-highlight-chart-card></app-highlight-chart-card>
-<app-info-card></app-info-card>
-<app-dashboard></app-dashboard>
+<ion-content>
+ <app-chart-card
+  [title]="t"
+  [chartData]="chartData"
+  [chartOptions]="chartOptions"
+  [type]="type">
+</app-chart-card>
+
+  <app-info-card
+  title="Temperatura"
+  value="25"
+  unit="°C"
+  color="tertiary">
+</app-info-card>
+
+
+ 
+</ion-content>

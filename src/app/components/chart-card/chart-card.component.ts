@@ -18,16 +18,23 @@ export class ChartCardComponent implements AfterViewInit {
 
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
 
-  ngAfterViewInit() {
+ ngAfterViewInit() {
+  setTimeout(() => {
     try {
-      console.log('Canva funcionando:', this.chartCanvas);
+      console.log('Canvas:', this.chartCanvas?.nativeElement);
+      console.log('Data:', this.chartData);
+
+      if (!this.chartCanvas?.nativeElement) return;
+
       new Chart(this.chartCanvas.nativeElement, {
         type: this.type,
         data: this.chartData,
         options: this.chartOptions,
       });
-    } catch (e: unknown) {
-      console.error('Error initializing chart:', e);
+    } catch (e) {
+      console.error('Erro ao inicializar o gráfico:', e);
     }
-  }
+  }, 0); 
+}
+
 }
