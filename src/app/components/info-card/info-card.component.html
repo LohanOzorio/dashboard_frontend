@@ -1,0 +1,11 @@
+
+<ion-card [color]="color">
+  <ion-card-header>
+    <ion-card-title>{{ title }}</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <h2 class="card-value">
+      {{ value }} <small *ngIf="unit">{{ unit }}</small>
+    </h2>
+  </ion-card-content>
+</ion-card>

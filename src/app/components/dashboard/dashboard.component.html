@@ -1,0 +1,49 @@
+<ion-content class="ion-padding dashboard-page">
+  
+  <ion-grid>
+  <p style="color:white">DASHBOARD RENDERIZADO</p>
+    <p>Se você está vendo isso, o dashboard está funcionando!</p>
+  
+    <ion-row>
+      <ion-col size="12" size-md="3" *ngFor="let card of infoCards">
+        <app-info-card
+          [title]="card.title"
+          [value]="card.value"
+          [unit]="card.unit"
+          [color]="card.color">
+        </app-info-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <app-highlight-chart-card
+          [title]="'Crescimento Mensal'"
+          [chartData]="lineChartData"
+          [chartOptions]="chartOptions">
+        </app-highlight-chart-card>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <app-highlight-chart-card
+          [title]="'Performance Geral'"
+          [chartData]="lineChartData"
+          [chartOptions]="chartOptions">
+        </app-highlight-chart-card>
+      </ion-col>
+    </ion-row>
+
+
+    <ion-row>
+      <ion-col size="12" size-md="4" *ngFor="let t of barChartTitles">
+        <app-chart-card
+          [title]="t"
+          [chartData]="barChartData"
+          [chartOptions]="chartOptions"
+          [type]="'bar'">
+        </app-chart-card>
+      </ion-col>
+    </ion-row>
+  
+  </ion-grid>
+
+</ion-content>

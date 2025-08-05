@@ -1,0 +1,7 @@
+{
+  "name": "dashboard-bci-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

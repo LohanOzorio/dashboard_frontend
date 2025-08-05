@@ -1,0 +1,85 @@
+.login-screen {
+  --background: transparent;
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+
+  .background-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #3346cc; 
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+  }
+
+  .login-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 40%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    .form-wrapper {
+      width: 80%;
+      max-width: 400px;
+      background-color: transparent;
+      padding: 40px 20px;
+      border-radius: 10px;
+      text-align: center;
+  
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .input-item {
+        border-radius: 999px;
+        --background: azure;
+        --padding-start: 10px;
+        --inner-padding-end: 10px;
+        color: black;
+      }
+
+      ion-icon {
+        font-size: 20px;
+        color: #000000;
+      }
+
+      ion-button {
+        color: white;
+        --border-radius: 64px;
+        --background: #0049FF;
+      
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+
+        
+      }
+
+      ion-title{
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        
+      }
+    }
+  }
+}
