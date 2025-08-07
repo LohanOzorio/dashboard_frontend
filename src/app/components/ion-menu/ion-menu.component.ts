@@ -11,7 +11,7 @@ import { ChartCardComponent } from '../chart-card/chart-card.component';
   templateUrl: './ion-menu.component.html',
   styleUrls: ['./ion-menu.component.scss'],
   imports: [
-    CommonModule, IonicModule, InfoCardComponent, HighlightChartCardComponent, ChartCardComponent
+    CommonModule, IonicModule, InfoCardComponent, HighlightChartCardComponent, ChartCardComponent,
   ],
 })
 export class IonMenuComponent {}

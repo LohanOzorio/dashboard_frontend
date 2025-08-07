@@ -8,13 +8,14 @@ import { InfoCardComponent } from 'src/app/components/info-card/info-card.compon
 import { DashboardComponent } from 'src/app/components/dashboard/dashboard.component';
 import { IonMenuComponent } from 'src/app/components/ion-menu/ion-menu.component';
 import { ChartType } from 'chart.js';
+import { PageFaturamentoMetaComponent } from 'src/app/components/page-faturamento-meta/page-faturamento-meta.component';
 
 @Component({
   selector: 'app-faturamento',
   templateUrl: './faturamento.page.html',
   styleUrls: ['./faturamento.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ChartCardComponent, HighlightChartCardComponent, InfoCardComponent, DashboardComponent, IonMenuComponent]
+  imports: [IonicModule, CommonModule, FormsModule, ChartCardComponent, HighlightChartCardComponent, InfoCardComponent, DashboardComponent, IonMenuComponent, PageFaturamentoMetaComponent]
 })
 export class FaturamentoPage {
 

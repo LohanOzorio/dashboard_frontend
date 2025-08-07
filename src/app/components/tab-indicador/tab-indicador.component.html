@@ -1,0 +1,26 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Relatório Mensal</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row class="header">
+        <ion-col><strong>Dataemissão (Mês)</strong></ion-col>
+        <ion-col><strong>Valor</strong></ion-col>
+        <ion-col><strong>Valormota</strong></ion-col>
+      </ion-row>
+
+      <ion-row *ngFor="let item of dados">
+        <ion-col>{{ item.mes }}</ion-col>
+        <ion-col>{{ formatar(item.valor) }}</ion-col>
+        <ion-col>{{ item.valormota ? formatar(item.valormota) : '' }}</ion-col>
+      </ion-row>
+
+      <ion-row class="total">
+        <ion-col><strong>Total</strong></ion-col>
+        <ion-col><strong>{{ formatar(totalValor) }}</strong></ion-col>
+        <ion-col><strong>{{ formatar(totalValormota) }}</strong></ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>
