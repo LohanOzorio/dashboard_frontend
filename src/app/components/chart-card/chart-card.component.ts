@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
 })
 export class ChartCardComponent implements AfterViewInit {
   @Input() title!: string;
-  @Input() chartData!: any;
-  @Input() chartOptions!: any;
+  @Input() barChartData!: any;
+  @Input() barChartOptions!: any;
   @Input() type: ChartType = 'bar'; 
 
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
@@ -22,14 +22,14 @@ export class ChartCardComponent implements AfterViewInit {
   setTimeout(() => {
     try {
       console.log('Canvas:', this.chartCanvas?.nativeElement);
-      console.log('Data:', this.chartData);
+      console.log('Data:', this.barChartData);
 
       if (!this.chartCanvas?.nativeElement) return;
 
       new Chart(this.chartCanvas.nativeElement, {
         type: this.type,
-        data: this.chartData,
-        options: this.chartOptions,
+        data: this.barChartData,
+        options: this.barChartOptions,
       });
     } catch (e) {
       console.error('Erro ao inicializar o gráfico:', e);

@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
 })
 export class HighlightChartCardComponent implements AfterViewInit {
   @Input() title!: string;
-  @Input() chartData!: any;
-  @Input() chartOptions!: any;
+  @Input() highlightChartData!: any;
+  @Input() highlightChartOptions!: any;
 
   @ViewChild('highlightCanvas') highlightCanvas!: ElementRef;
 
@@ -22,8 +22,8 @@ export class HighlightChartCardComponent implements AfterViewInit {
       console.log('Canva funcionando:', this.highlightCanvas);
       new Chart(this.highlightCanvas.nativeElement, {
         type: 'line',
-        data: this.chartData,
-        options: this.chartOptions,
+        data: this.highlightChartData,
+        options: this.highlightChartOptions,
       });
     } catch (e: unknown) {
     console.error('Error initializing chart:', e);

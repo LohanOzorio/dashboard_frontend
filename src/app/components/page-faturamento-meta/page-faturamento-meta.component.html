@@ -97,38 +97,39 @@
  <ion-row>
   <ion-grid [fixed]="true">
   <ion-row>
-  <ion-col size="auto">
-  <app-chart-card
-    [title]="t"
-    [chartData]="chartData"
-    [chartOptions]="chartOptions"
-    [type]="type">
-  </app-chart-card>
-  </ion-col>
-  <ion-col size="auto">
-  <app-chart-card
-    [title]="t"
-    [chartData]="chartData"
-    [chartOptions]="chartOptions"
-    [type]="type">
-  </app-chart-card>
-  </ion-col>
-  <ion-col size="auto">
-  <app-chart-card
-    [title]="t"
-    [chartData]="chartData"
-    [chartOptions]="chartOptions"
-    [type]="type">
-  </app-chart-card>
-  </ion-col>
-  <ion-col size="auto">
-  <app-chart-card
-    [title]="t"
-    [chartData]="chartData"
-    [chartOptions]="chartOptions"
-    [type]="type">
-  </app-chart-card>
-  </ion-col>
+  
+  <ion-grid>
+    <ion-row>
+      
+      <ion-col size="12" size-md="6" *ngFor="let chart of barCharts">
+        <app-chart-card
+          [title]="chart.title"
+          [barChartData]="chart.barChartData"
+          [barChartOptions]="chart.barChartOptions">
+        </app-chart-card>
+      </ion-col>
+
+     
+      <ion-col size="12" size-md="6" *ngFor="let chart of highlightCharts">
+        <app-highlight-chart-card
+          [title]="chart.title"
+          [highlightChartData]="chart.highlightChartData"
+          [highlightChartOptions]="chart.highlightChartOptions">
+        </app-highlight-chart-card>
+      </ion-col>
+
+      
+      <ion-col size="12" size-md="12" *ngFor="let chart of mixedCharts">
+        <chart-mixed-card
+          [title]="chart.title"
+          [mixedChartData]="chart.mixedChartData"
+          [mixedChartOptions]="chart.mixedChartOptions">
+        </chart-mixed-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
   </ion-row>
 
   </ion-grid>
