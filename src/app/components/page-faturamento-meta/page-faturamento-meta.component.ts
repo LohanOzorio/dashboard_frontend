@@ -8,7 +8,7 @@ import { ChartType } from 'chart.js';
 import { TabIndicadorComponent } from '../tab-indicador/tab-indicador.component';
 import { Router } from '@angular/router';
 import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
-
+import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
 @Component({
   standalone: true,
   imports: [
@@ -18,7 +18,9 @@ import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.co
     HighlightChartCardComponent,
     ChartCardComponent,
     TabIndicadorComponent,
-    ChartMixedCardComponent
+    ChartMixedCardComponent,
+    TesteQuadradoComponent
+    
   ],
   selector: 'page-faturamento-meta',
   templateUrl: './page-faturamento-meta.component.html',
@@ -30,6 +32,7 @@ export class PageFaturamentoMetaComponent implements OnInit {
 
   ngOnInit() {}
 
+  mostrar = false;
   
   barCharts = [
     {
@@ -75,7 +78,7 @@ export class PageFaturamentoMetaComponent implements OnInit {
     }
   ];
 
-  // ----- Gráficos de Destaque (HighlightChartCardComponent) -----
+ 
   highlightCharts = [
     {
       title: 'Meta Atingida',
@@ -95,7 +98,7 @@ export class PageFaturamentoMetaComponent implements OnInit {
     }
   ];
 
-  // ----- Gráficos Mistos (ChartMixedCardComponent) -----
+  
   mixedCharts = [
     {
       title: 'Comparativo Receita x Meta',

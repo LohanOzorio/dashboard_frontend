@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule,ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-chart-card.component'; 
 import { ChartCardComponent } from '../chart-card/chart-card.component';
-import { ChartType } from 'chart.js';
 import { Router } from '@angular/router';
 import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
-
+import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
 
 @Component({
   standalone: true,
@@ -18,15 +17,32 @@ import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.co
 })
 export class PageHomeComponent {
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router, 
+    private modalCtrl: ModalController 
+  ) {}
+
 
   ngOnInit() {}
+
+
 
   entrar() {
     this.router.navigate(['/Faturamento']); 
   }
 
-  // -------- Dados para ChartCardComponent (bar charts) --------
+    async abrirModal() {
+    const modal = await this.modalCtrl.create({
+      component: TesteQuadradoComponent,
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    console.log('Modal fechado com:', data, role);
+  }
+
+ 
   barCharts = [
     {
       title: 'Vendas',
@@ -72,7 +88,7 @@ export class PageHomeComponent {
     }
   ];
 
-  // -------- Dados para HighlightChartCardComponent --------
+  
   highlightCharts = [
     {
       title: 'Destaque A',
@@ -106,7 +122,6 @@ export class PageHomeComponent {
     }
   ];
 
-  // -------- Dados para ChartMixedCardComponent --------
   mixedCharts = [
     {
       title: 'Combinado 1',

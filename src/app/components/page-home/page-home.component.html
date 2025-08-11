@@ -1,46 +1,4 @@
 
-<ion-menu contentId="main-content" type="overlay">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>Menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content>
-    <ion-accordion-group>
-      <ion-button expand="full" routerLink="/home" routerDirection="root" fill="clear">Home</ion-button>
-      <ion-accordion value="first">
-        <ion-item slot="header" color="light">
-          <ion-label>Faturamento</ion-label>
-        </ion-item>
-          <ion-button slot="content" fill="clear" expand="full" (click)="entrar()" >Real X Meta</ion-button>
-          <ion-button slot="content" fill="clear" expand="full">Geral</ion-button>
-      </ion-accordion>
-      <ion-accordion value="second" >
-        <ion-item slot="header" color="light">
-          <ion-label>Cliente</ion-label>
-        </ion-item>
-                <ion-button slot="content" fill="clear" expand="full">Inadimplência</ion-button>
-      </ion-accordion>
-      <ion-accordion value="third">
-        <ion-item slot="header" color="light">
-          <ion-label>Financeiro</ion-label>
-        </ion-item>
-        <ion-button slot="content" fill="clear" expand="full">Por Natureza</ion-button>
-        <ion-button slot="content" fill="clear" expand="full">Por Centro de Custo</ion-button>
-        <ion-button slot="content" fill="clear" expand="full">Pagamentos x Recebimentos</ion-button>
-      </ion-accordion>
-        <ion-accordion value="fourth">
-        <ion-item slot="header" color="light">
-          <ion-label>Gestão</ion-label>
-        </ion-item>
-        <ion-button slot="content" fill="clear" expand="full">Comercial</ion-button>
-        <ion-button slot="content" fill="clear" expand="full">Faturamento x Contas  Receber</ion-button>
-        <ion-button slot="content" fill="clear" expand="full">Cotações X Requisições</ion-button>
-      </ion-accordion>
-</ion-accordion-group>
-  </ion-content>
-</ion-menu>
-
 <div class="ion-page" id="main-content">
   <ion-header>
     <ion-toolbar>
@@ -51,6 +9,7 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-button (click)="abrirModal()">Adicionar componente</ion-button>
 
   <ion-content>
 <ion-grid [fixed]="true">
