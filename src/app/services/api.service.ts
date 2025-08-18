@@ -1,24 +1,39 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private API_URL = 'http://localhost:3600'; 
+  private baseUrl = 'http://localhost:3600'; // URL do seu Fastify
 
   constructor(private http: HttpClient) {}
 
+  // Faturamento
   getFaturamento(): Observable<any> {
-    return this.http.get(`${this.API_URL}/faturamento`);
+    return this.http.get(`${this.baseUrl}/faturamento`);
   }
 
+  // Metas
   getMetas(): Observable<any> {
-    return this.http.get(`${this.API_URL}/metas`);
+    return this.http.get(`${this.baseUrl}/metas`);
+  }
+  getMetasTN(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/metas/tn`);
+  }
+  getMetasTS(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/metas/ts`);
+  }
+  getMetasByDate(date: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/metas/by-date?date=${date}`);
   }
 
+  // Natureza de Custo
   getNaturezaCusto(): Observable<any> {
-    return this.http.get(`${this.API_URL}/natureza-custo`);
+    return this.http.get(`${this.baseUrl}/natureza-custo`);
+  }
+  getNaturezaCustoById(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/natureza-custoId?id=${id}`);
   }
 }

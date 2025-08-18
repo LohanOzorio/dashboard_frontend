@@ -2,14 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { InfoCardComponent } from '../info-card/info-card.component';
-import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-chart-card.component'; 
+import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-chart-card.component';
 import { ChartCardComponent } from '../chart-card/chart-card.component';
-import { ChartType } from 'chart.js';
 import { TabIndicadorComponent } from '../tab-indicador/tab-indicador.component';
-import { Router } from '@angular/router';
 import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
 import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
+import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+
 @Component({
+  selector: 'page-faturamento-meta',
   standalone: true,
   imports: [
     CommonModule,
@@ -20,39 +22,24 @@ import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.compone
     TabIndicadorComponent,
     ChartMixedCardComponent,
     TesteQuadradoComponent
-    
   ],
-  selector: 'page-faturamento-meta',
   templateUrl: './page-faturamento-meta.component.html',
   styleUrls: ['./page-faturamento-meta.component.scss'],
 })
 export class PageFaturamentoMetaComponent implements OnInit {
 
-  constructor(private router: Router) {}
+  mostrar: boolean = false;
 
-  ngOnInit() {}
-
-  mostrar = false;
-  
-  barCharts = [
+  barCharts: any[] = [
     {
       title: 'Faturamento Mensal',
       barChartData: {
-        labels: [
-          'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-        ],
-        datasets: [
-          {
-            label: 'Faturamento',
-            data: [100, 250, 300, 500, 400, 600, 700, 800, 900, 1000, 1100, 1200],
-            backgroundColor: [
-              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-              '#9966FF', '#FF9F40', '#FF6384', '#36A2EB',
-              '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-            ]
-          }
-        ]
+        labels: [],
+        datasets: [{
+          label: 'Faturamento',
+          data: [],
+          backgroundColor: []
+        }]
       },
       barChartOptions: {
         responsive: true,
@@ -65,8 +52,8 @@ export class PageFaturamentoMetaComponent implements OnInit {
     {
       title: 'Despesas',
       barChartData: {
-        labels: ['Salários', 'Marketing', 'TI', 'Logística'],
-        datasets: [{ label: 'Despesas', data: [500, 300, 200, 400] }]
+        labels: [],
+        datasets: [{ label: 'Despesas', data: [] }]
       },
       barChartOptions: {
         responsive: true,
@@ -78,42 +65,64 @@ export class PageFaturamentoMetaComponent implements OnInit {
     }
   ];
 
- 
-  highlightCharts = [
+  highlightCharts: any[] = [
     {
       title: 'Meta Atingida',
       highlightChartData: {
         labels: ['Atingido', 'Restante'],
-        datasets: [{ label: 'Meta', data: [75, 25] }]
-      },
-      highlightChartOptions: { responsive: true }
-    },
-    {
-      title: 'Crescimento',
-      highlightChartData: {
-        labels: ['Atual', 'Anterior'],
-        datasets: [{ label: 'Crescimento', data: [1200, 950] }]
+        datasets: [{ label: 'Meta', data: [0, 0] }]
       },
       highlightChartOptions: { responsive: true }
     }
   ];
 
-  
-  mixedCharts = [
-    {
-      title: 'Comparativo Receita x Meta',
-      mixedChartData: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr'],
-        datasets: [
-          { type: 'bar', label: 'Receita', data: [500, 600, 550, 700] },
-          { type: 'line', label: 'Meta', data: [450, 650, 500, 720] }
-        ]
+  mixedCharts: any[] = []; // Se quiser usar gráficos combinados, inicializa aqui
+
+  constructor(private api: ApiService, private router: Router) {}
+
+  ngOnInit() {
+    this.carregarDados();
+  }
+
+  carregarDados() {
+    // 1️⃣ Faturamento Mensal
+    this.api.getFaturamento().subscribe({
+      next: (res: any[]) => {
+        if(res.length > 0) {
+          this.barCharts[0].barChartData.labels = res.map(r => r.mes);
+          this.barCharts[0].barChartData.datasets[0].data = res.map(r => r.valor);
+          this.barCharts[0].barChartData.datasets[0].backgroundColor = this.gerarCores(res.length);
+        }
       },
-      mixedChartOptions: { responsive: true }
-    }
-  ];
+      error: err => console.error('Erro faturamento:', err)
+    });
+
+    // 2️⃣ Despesas / Natureza de Custo
+    this.api.getNaturezaCusto().subscribe({
+      next: (res: any[]) => {
+        if(res.length > 0) {
+          this.barCharts[1].barChartData.labels = res.map(r => r.setor);
+          this.barCharts[1].barChartData.datasets[0].data = res.map(r => r.valor);
+        }
+      },
+      error: err => console.error('Erro despesas:', err)
+    });
+
+    // 3️⃣ Metas
+    this.api.getMetas().subscribe({
+      next: (res: any) => {
+        this.highlightCharts[0].highlightChartData.datasets[0].data = [res.atingido, res.restante];
+      },
+      error: err => console.error('Erro metas:', err)
+    });
+  }
+
+  gerarCores(tamanho: number) {
+    const cores = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'];
+    return Array.from({ length: tamanho }, (_, i) => cores[i % cores.length]);
+  }
 
   entrar() {
-    this.router.navigate(['/home']); 
+    this.router.navigate(['/home']);
   }
 }
