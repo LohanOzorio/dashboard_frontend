@@ -38,4 +38,6 @@ export class AppComponent {
       error: err => console.error('Erro natureza:', err)
     });
   }
+
+  
 }
