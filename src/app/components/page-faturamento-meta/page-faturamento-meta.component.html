@@ -1,103 +1,80 @@
-
 <div class="ion-page" id="main-content">
   <ion-header class="header-teste">
     <ion-toolbar>
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>Faturamento Real X Metas</ion-title>
+      <ion-title>Faturamento Real x Metas</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  <ion-content>
+    <ion-grid [fixed]="true">
 
-<ion-content>
-  <ion-grid>
+    
+      <ion-row>
+        <ion-col>
+          <ion-button (click)="mostrar = !mostrar">Adicionar Gráfico</ion-button>
+          <teste-quadrado *ngIf="mostrar"></teste-quadrado>
+        </ion-col>
+      </ion-row>
 
-    <ion-button (click)="mostrar = !mostrar">Adicionar Gráfico</ion-button>
-    <teste-quadrado *ngIf="mostrar"></teste-quadrado>
+    
+      <ion-row class="ion-margin-bottom">
+        <ion-col size="12" size-md="3">
+          <app-info-card title="Meta TS" [value]="metaTS()" color="tertiary"></app-info-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <app-info-card title="Meta TN" [value]="metaTN()" color="tertiary"></app-info-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <app-info-card title="Meta Total" [value]="metaTotal()" color="tertiary"></app-info-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <app-info-card title="Faturamento Real (mês)" [value]="fatRealMes()" color="tertiary"></app-info-card>
+        </ion-col>
+      </ion-row>
 
-  <ion-col>
-  <ion-grid [fixed]="true">
-    <ion-row>
-      <ion-col size="auto">
-        <app-info-card
-          title="Meta TS"
-          value="70.000"
-          unit="R$"
-          color="tertiary">
-        </app-info-card>
-      </ion-col>
-      <ion-col size="auto">
-        <app-info-card
-            title="Meta TN"
-            value="15.000"
-            unit="R$"
-            color="tertiary">
-        </app-info-card>
-      </ion-col>
-      <ion-col size="auto">
-        <app-info-card
-            title="Meta Total"
-            value="85.000"
-            unit="R$"
-            color="tertiary">
-        </app-info-card>
-      </ion-col>
-      <ion-col size="auto">
-      <app-info-card
-          title="Faturamento Real Agosto"
-          value="xx.xxx"
-          unit="R$"
-          color="tertiary">
-      </app-info-card>
-      </ion-col>
-  </ion-row>
-  </ion-grid>
-  </ion-col>
-
- <ion-row>
-  <ion-grid [fixed]="true">
-  <ion-row>
-  
-  <ion-grid>
-    <ion-row>
       
-      <ion-col size="12" size-md="6" *ngFor="let chart of barCharts">
-        <app-chart-card
-          [title]="chart.title"
-          [barChartData]="chart.barChartData"
-          [barChartOptions]="chart.barChartOptions">
-        </app-chart-card>
-      </ion-col>
+      <ion-row>
+        <ion-col size="12" size-md="6" *ngFor="let chart of barCharts">
+          <app-chart-card
+            [title]="chart.title"
+            [barChartData]="chart.barChartData"
+            [barChartOptions]="chart.barChartOptions">
+          </app-chart-card>
+        </ion-col>
+      </ion-row>
+
+      
+      <ion-row>
+        <ion-col size="12" size-md="6" *ngFor="let chart of highlightCharts">
+          <app-highlight-chart-card
+            [title]="chart.title"
+            [highlightChartData]="chart.highlightChartData"
+            [highlightChartOptions]="chart.highlightChartOptions">
+          </app-highlight-chart-card>
+        </ion-col>
+      </ion-row>
+
+      
+      <ion-row>
+        <ion-col size="12" *ngFor="let chart of mixedCharts">
+          <chart-mixed-card
+            [title]="chart.title"
+            [mixedChartData]="chart.mixedChartData"
+            [mixedChartOptions]="chart.mixedChartOptions">
+          </chart-mixed-card>
+        </ion-col>
+      </ion-row>
 
      
-      <ion-col size="12" size-md="6" *ngFor="let chart of highlightCharts">
-        <app-highlight-chart-card
-          [title]="chart.title"
-          [highlightChartData]="chart.highlightChartData"
-          [highlightChartOptions]="chart.highlightChartOptions">
-        </app-highlight-chart-card>
-      </ion-col>
+      <ion-row>
+        <ion-col>
+          <tab-indicador></tab-indicador>
+        </ion-col>
+      </ion-row>
 
-      
-      <ion-col size="12" size-md="12" *ngFor="let chart of mixedCharts">
-        <chart-mixed-card
-          [title]="chart.title"
-          [mixedChartData]="chart.mixedChartData"
-          [mixedChartOptions]="chart.mixedChartOptions">
-        </chart-mixed-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
-
-  </ion-row>
-
-  </ion-grid>
-  <tab-indicador></tab-indicador>
-  </ion-row>
-  </ion-grid>
-</ion-content>
-
+    </ion-grid>
+  </ion-content>
 </div>
-

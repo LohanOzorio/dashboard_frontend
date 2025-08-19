@@ -1,39 +1,46 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
+
+import { Meta, MetaTN, MetaTS } from '../models/meta.model';
+import { Faturamento } from '../models/faturamento.model';
+import { NaturezaCusto } from '../models/naturezacusto.model';
+
+@Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = 'http://localhost:3600'; // URL do seu Fastify
+  private baseUrl = 'http://localhost:3600';
 
   constructor(private http: HttpClient) {}
 
-  // Faturamento
-  getFaturamento(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/faturamento`);
+  
+  getFaturamento(): Observable<Faturamento[]> {
+    return this.http.get<Faturamento[]>(`${this.baseUrl}/faturamento`);
   }
 
-  // Metas
-  getMetas(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/metas`);
-  }
-  getMetasTN(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/metas/tn`);
-  }
-  getMetasTS(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/metas/ts`);
-  }
-  getMetasByDate(date: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/metas/by-date?date=${date}`);
+  
+  getMetas(): Observable<Meta[]> {
+    return this.http.get<Meta[]>(`${this.baseUrl}/metas`);
   }
 
-  // Natureza de Custo
-  getNaturezaCusto(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/natureza-custo`);
+  getMetasTN(): Observable<MetaTN[]> {
+    return this.http.get<MetaTN[]>(`${this.baseUrl}/metas/tn`);
   }
-  getNaturezaCustoById(id: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/natureza-custoId?id=${id}`);
+
+  getMetasTS(): Observable<MetaTS[]> {
+    return this.http.get<MetaTS[]>(`${this.baseUrl}/metas/ts`);
+  }
+
+  getMetasByDate(date: string): Observable<Meta[]> {
+    return this.http.get<Meta[]>(`${this.baseUrl}/metas/by-date?date=${date}`);
+  }
+
+ 
+  getNaturezaCusto(): Observable<NaturezaCusto[]> {
+    return this.http.get<NaturezaCusto[]>(`${this.baseUrl}/natureza-custo`);
+  }
+
+  getNaturezaCustoById(id: string): Observable<NaturezaCusto> {
+    return this.http.get<NaturezaCusto>(`${this.baseUrl}/natureza-custoId?id=${id}`);
   }
 }
