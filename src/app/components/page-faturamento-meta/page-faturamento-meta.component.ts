@@ -76,7 +76,7 @@ export class PageFaturamentoMetaComponent implements OnInit {
     }
   ];
 
-  mixedCharts: any[] = []; // Se quiser usar gráficos combinados, inicializa aqui
+  mixedCharts: any[] = []; 
 
   constructor(private api: ApiService, private router: Router) {}
 
