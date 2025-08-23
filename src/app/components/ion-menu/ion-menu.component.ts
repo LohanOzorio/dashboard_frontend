@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component,Input } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
@@ -7,10 +7,10 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   templateUrl: './ion-menu.component.html',
   styleUrls: ['./ion-menu.component.scss'],
-  imports: [
-    CommonModule, IonicModule
-  ],
+  imports: [CommonModule, IonicModule]
 })
-export class IonMenuComponent {}
+export class IonMenuComponent {
+  @Input() contentId!: string;
+}
 
 

@@ -21,7 +21,7 @@ export class HighlightChartCardComponent implements AfterViewInit {
     try {
       console.log('Canva funcionando:', this.highlightCanvas);
       new Chart(this.highlightCanvas.nativeElement, {
-        type: 'line',
+        type: 'bubble',
         data: this.highlightChartData,
         options: this.highlightChartOptions,
       });
