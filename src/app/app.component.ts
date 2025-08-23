@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { IonMenuComponent } from './components/ion-menu/ion-menu.component';
+import { IonicModule } from '@ionic/angular';
+import { MenuContentComponent } from './components/menu-content/menu-content.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient,HttpClientModule  } from '@angular/common/http';
 import { ApiService } from './services/api.service';
@@ -9,7 +9,7 @@ import { ApiService } from './services/api.service';
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonApp, IonRouterOutlet,IonMenuComponent, CommonModule, HttpClientModule  ],
+  imports: [MenuContentComponent,IonicModule, CommonModule, HttpClientModule  ],
 })
 export class AppComponent {
   faturamento: any;

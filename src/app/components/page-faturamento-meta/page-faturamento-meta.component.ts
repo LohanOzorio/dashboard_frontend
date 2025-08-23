@@ -9,6 +9,7 @@ import { ChartCardComponent } from '../chart-card/chart-card.component';
 import { TabIndicadorComponent } from '../tab-indicador/tab-indicador.component';
 import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
 import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
+import { HeaderComponent } from '../header-geral/header-geral.component';
 
 import { ApiService } from '../../services/api.service';
 import { Meta } from '../../models/meta.model';
@@ -29,7 +30,8 @@ type ChartCfg = { title: string; barChartData?: ChartData; barChartOptions?: any
     ChartCardComponent,
     TabIndicadorComponent,
     ChartMixedCardComponent,
-    TesteQuadradoComponent
+    TesteQuadradoComponent,
+    HeaderComponent
   ],
   templateUrl: './page-faturamento-meta.component.html',
   styleUrls: ['./page-faturamento-meta.component.scss'],
@@ -216,16 +218,16 @@ export class PageFaturamentoMetaComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 
-  // Helpers
+  
   private brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   private parseBRL(str: string) {
-    // "R$ 12.345,67" -> 12345.67
+    
     return Number((str || '0').replace(/\s|R\$/g, '').replace(/\./g, '').replace(',', '.')) || 0;
   }
   private toShortDate(iso: string) { return new Date(iso).toLocaleDateString(); }
   private toNumber(x?: string | null) {
     if (!x) return 0;
-    // tenta "1.234,56" e "1234.56"
+    
     const canon = x.includes(',') && x.includes('.') ? x.replace(/\./g, '').replace(',', '.') : x.replace(',', '.');
     const n = Number(canon);
     return isNaN(n) ? 0 : n;

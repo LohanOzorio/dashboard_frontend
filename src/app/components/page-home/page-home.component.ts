@@ -8,6 +8,7 @@ import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-c
 import { ChartCardComponent } from '../chart-card/chart-card.component';
 import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
 import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
+import { HeaderComponent } from '../header-geral/header-geral.component';
 
 import { ApiService } from '../../services/api.service';
 import { Faturamento } from '../../models/faturamento.model';
@@ -37,7 +38,7 @@ interface MixedChartCfg {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, InfoCardComponent, HighlightChartCardComponent, ChartCardComponent, ChartMixedCardComponent],
+  imports: [CommonModule, IonicModule, InfoCardComponent, HighlightChartCardComponent, ChartCardComponent, ChartMixedCardComponent,HeaderComponent],
   selector: 'page-home',
   templateUrl: './page-home.component.html',
   styleUrls: ['./page-home.component.scss'],

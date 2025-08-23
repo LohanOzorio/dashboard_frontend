@@ -1,0 +1,49 @@
+<ion-content>
+  <ion-accordion-group>
+    
+    <ion-item routerLink="/home" routerDirection="root" button detail="false" lines="full">
+      <ion-label>Home</ion-label>
+    </ion-item>
+
+    <ion-accordion value="first">
+      <ion-item slot="header" color="light">
+        <ion-label>Menu</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <btn-menu titulo="Faturamento" routerLink="/faturamento"></btn-menu>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion value="second">
+      <ion-item slot="header" color="light">
+        <ion-label>Cliente</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <btn-menu titulo="Inadimplência" routerLink="/inadimplencia"></btn-menu>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion value="third">
+      <ion-item slot="header" color="light">
+        <ion-label>Financeiro</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <btn-menu titulo="Por Natureza" routerLink="/por-natureza"></btn-menu>
+        <btn-menu titulo="Por Centro de Custo" routerLink="/por-centro-custo"></btn-menu>
+        <btn-menu titulo="Pagamentos x Recebimentos" routerLink="/pagamentos-recebimentos"></btn-menu>
+      </div>
+    </ion-accordion>
+
+    <ion-accordion value="fourth">
+      <ion-item slot="header" color="light">
+        <ion-label>Gestão</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <btn-menu titulo="Comercial" routerLink="/comercial"></btn-menu>
+        <btn-menu titulo="Faturamento x Contas Receber" routerLink="/faturamento-contas-receber"></btn-menu>
+        <btn-menu titulo="Cotações X Requisições" routerLink="/cotacoes-requisicoes"></btn-menu>
+      </div>
+    </ion-accordion>
+
+  </ion-accordion-group>
+</ion-content>
