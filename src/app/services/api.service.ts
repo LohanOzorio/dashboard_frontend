@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 import { Meta, MetaTN, MetaTS } from '../models/meta.model';
 import { Faturamento } from '../models/faturamento.model';
 import { NaturezaCusto } from '../models/naturezacusto.model';
+import { MetaComparativo, FaturamentoAgrupado } from '../models/comparativo.model';
+import { GraficoConfig } from '../models/grafico-config.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -42,5 +44,13 @@ export class ApiService {
 
   getNaturezaCustoById(id: string): Observable<NaturezaCusto> {
     return this.http.get<NaturezaCusto>(`${this.baseUrl}/natureza-custoId?id=${id}`);
+  }
+
+  getFaturamentoAgrupado(): Observable<FaturamentoAgrupado[]> {
+    return this.http.get<FaturamentoAgrupado[]>(`${this.baseUrl}/faturamento/agrupado`);
+  }
+
+  getMetaComparativo(): Observable<MetaComparativo[]> {
+    return this.http.get<MetaComparativo[]>(`${this.baseUrl}/metas/comparativo`);
   }
 }

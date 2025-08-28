@@ -4,62 +4,37 @@
   <ion-content>
     <ion-grid [fixed]="true">
 
-      
-      <ion-row>
-        <ion-col>
-          <ion-button (click)="abrirModal()">Adicionar componente</ion-button>
-        </ion-col>
-      </ion-row>
 
-     
+      
       <ion-row class="ion-margin-bottom">
         <ion-col size="12" size-md="3">
-          <app-info-card title="Faturamento Total" [value]="faturamentoTotal()" color="tertiary"></app-info-card>
+          <app-info-card title="Faturamento Total"  color="primary"></app-info-card>
         </ion-col>
         <ion-col size="12" size-md="3">
-          <app-info-card title="Meta Atingida" [value]="metaAtingidaPct()" unit="%" color="tertiary"></app-info-card>
+          <app-info-card title="Meta Atingida" color="primary"></app-info-card>
         </ion-col>
         <ion-col size="12" size-md="3">
-          <app-info-card title="Inadimplências" [value]="inadimplencias()" unit="%" color="tertiary"></app-info-card>
+          <app-info-card title="Inadimplências" color="primary"></app-info-card>
         </ion-col>
         <ion-col size="12" size-md="3">
-          <app-info-card title="Recebimentos Totais" [value]="recebimentosTotais()" color="tertiary"></app-info-card>
+          <app-info-card title="Recebimentos Totais"  color="primary"></app-info-card>
         </ion-col>
       </ion-row>
 
       
-      <ion-row>
-        <ion-col size="12" size-md="6" *ngFor="let chart of barCharts">
-          <app-chart-card
-            [title]="chart.title"
-            [barChartData]="chart.barChartData"
-            [barChartOptions]="chart.barChartOptions">
-          </app-chart-card>
-        </ion-col>
-      </ion-row>
+    <ion-row>
+      <ion-col *ngFor="let config of graficosConfig" size="12" size-md="6">
+        <app-chart-card
+          [title]="config.title"
+          [seriesData]="config.seriesData"
+          [xAxisLabels]="config.xAxisLabels"
+          [yAxisOptions]="config.yAxisOptions"
+          [valueFormatter]="brl">
+        </app-chart-card>
+      </ion-col>
+    </ion-row>
 
       
-      <ion-row>
-        <ion-col size="12" size-md="6" *ngFor="let chart of highlightCharts">
-          <app-highlight-chart-card
-            [title]="chart.title"
-            [highlightChartData]="chart.highlightChartData"
-            [highlightChartOptions]="chart.highlightChartOptions">
-          </app-highlight-chart-card>
-        </ion-col>
-      </ion-row>
-
-    
-      <ion-row>
-        <ion-col size="12" *ngFor="let chart of mixedCharts">
-          <chart-mixed-card
-            [title]="chart.title"
-            [mixedChartData]="chart.mixedChartData"
-            [mixedChartOptions]="chart.mixedChartOptions">
-          </chart-mixed-card>
-        </ion-col>
-      </ion-row>
-
-    </ion-grid>
+      </ion-grid>
   </ion-content>
 </div>

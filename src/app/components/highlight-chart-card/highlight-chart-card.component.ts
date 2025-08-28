@@ -1,34 +1,21 @@
-import { Component, Input, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { Chart } from 'chart.js/auto';
+import { Component, Input } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { NgxEchartsModule } from 'ngx-echarts';
+import { EChartsOption } from 'echarts';
 
 @Component({
   selector: 'app-highlight-chart-card',
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [
+    IonicModule, 
+    CommonModule,
+    NgxEchartsModule 
+  ],
   templateUrl: './highlight-chart-card.component.html',
   styleUrls: ['./highlight-chart-card.component.scss']
 })
-export class HighlightChartCardComponent implements AfterViewInit {
+export class HighlightChartCardComponent {
   @Input() title!: string;
-  @Input() highlightChartData!: any;
-  @Input() highlightChartOptions!: any;
-
-  @ViewChild('highlightCanvas') highlightCanvas!: ElementRef;
-
-  ngAfterViewInit() {
-    try {
-      console.log('Canva funcionando:', this.highlightCanvas);
-      new Chart(this.highlightCanvas.nativeElement, {
-        type: 'bubble',
-        data: this.highlightChartData,
-        options: this.highlightChartOptions,
-      });
-    } catch (e: unknown) {
-    console.error('Error initializing chart:', e);
-  }
-
-  }
-
- }
+  @Input() chartOptions!: EChartsOption;
+}

@@ -1,245 +1,157 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal,DestroyRef } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
-import { InfoCardComponent } from '../info-card/info-card.component';
-import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-chart-card.component';
+
 import { ChartCardComponent } from '../chart-card/chart-card.component';
-import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
-import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
+
+
+import { FaturamentoAgrupado, MetaComparativo } from '../../models/comparativo.model';
+import { GraficoConfig } from 'src/app/models/grafico-config.model';
+
+// C
+import { InfoCardComponent } from '../info-card/info-card.component';
 import { HeaderComponent } from '../header-geral/header-geral.component';
 
+// api
 import { ApiService } from '../../services/api.service';
 import { Faturamento } from '../../models/faturamento.model';
 import { Meta } from '../../models/meta.model';
 import { NaturezaCusto } from '../../models/naturezacusto.model';
 
-
-type ChartData = { labels: string[]; datasets: any[] };
-
-interface BarChartCfg {
-  title: string;
-  barChartData: ChartData;
-  barChartOptions: any;
-}
-
-interface HighlightChartCfg {
-  title: string;
-  highlightChartData: ChartData;
-  highlightChartOptions: any;
-}
-
-interface MixedChartCfg {
-  title: string;
-  mixedChartData: ChartData;
-  mixedChartOptions: any;
-}
-
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, InfoCardComponent, HighlightChartCardComponent, ChartCardComponent, ChartMixedCardComponent,HeaderComponent],
+  imports: [CommonModule, IonicModule, InfoCardComponent, HeaderComponent, ChartCardComponent],
   selector: 'page-home',
   templateUrl: './page-home.component.html',
   styleUrls: ['./page-home.component.scss'],
 })
-export class PageHomeComponent implements OnInit {
+export class PageHomeComponent {
 
-  constructor(
-    private router: Router,
-    private modalCtrl: ModalController,
-    private api: ApiService
-  ) {}
+graficosConfig: GraficoConfig[] = [];
+  loading = false;
+  errorMsg = '';
 
-  
-  faturamentoTotal = signal<string>('R$ 0,00');
-  metaAtingidaPct = signal<string>('0.0');
-  inadimplencias = signal<string>('4,5'); 
-  recebimentosTotais = signal<string>('R$ 0,00');
+  constructor(private api: ApiService, private destroyRef: DestroyRef) {}
 
- 
-  barCharts: BarChartCfg[] = [
-    {
-      title: 'Faturamento por Mês',
-      barChartData: { labels: [], datasets: [{ label: 'Faturamento', data: [] }] },
-      barChartOptions: {
-        responsive: true,
-        plugins: { legend: { position: 'top' }, title: { display: true, text: 'Faturamento por Mês (R$)' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    },
-    {
-      title: 'Top Centros de Custo',
-      barChartData: { labels: [], datasets: [{ label: 'Despesas', data: [] }] },
-      barChartOptions: {
-        responsive: true,
-        plugins: { legend: { position: 'top' }, title: { display: true, text: 'Top 8 Centros de Custo (R$)' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    }
-  ];
-
-  highlightCharts: HighlightChartCfg[] = [
-    {
-      title: 'Faturamento Diário (Mês Atual)',
-      highlightChartData: { labels: [], datasets: [{ label: 'Faturamento', data: [], fill: false }] },
-      highlightChartOptions: { responsive: true }
-    }
-  ];
-
-  mixedCharts: MixedChartCfg[] = [
-    {
-      title: 'Faturamento Mensal (Barra) x Meta Total (Linha)',
-      mixedChartData: { labels: [], datasets: [] },
-      mixedChartOptions: { responsive: true }
-    }
-  ];
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.carregarDados();
   }
 
-  private carregarDados() {
-  
-    this.api.getFaturamento().subscribe({
-      next: (rows: Faturamento[]) => {
-        const ordenados = [...rows].sort(
-          (a, b) => new Date(a.data_emissao).getTime() - new Date(b.data_emissao).getTime()
-        );
+  // helper de moeda BRL p/ tooltip e eixos
+  readonly brl = (v: number | string | null | undefined) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 })
+      .format(Number(v ?? 0));
 
-       
-        const total = ordenados.reduce((acc, r) => acc + (r.valor_nota ?? 0), 0);
-        this.faturamentoTotal.set(this.brl(total));
-        this.recebimentosTotais.set(this.brl(total));
+  carregarDados(): void {
+    this.loading = true;
+    this.errorMsg = '';
 
-        
-        const mapaMes: Record<string, number> = {};
-        for (const f of ordenados) {
-          const d = new Date(f.data_emissao);
-          const key = `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-          mapaMes[key] = (mapaMes[key] ?? 0) + (f.valor_nota ?? 0);
-        }
-        const labelsMes = Object.keys(mapaMes);
-        const valoresMes = labelsMes.map(l => mapaMes[l]);
+    const faturamento$ = this.api.getFaturamentoAgrupado();
+    const metas$       = this.api.getMetaComparativo();
 
-        
-        this.barCharts = [
-          {
-            ...this.barCharts[0],
-            barChartData: { labels: labelsMes, datasets: [{ label: 'Faturamento', data: valoresMes }] }
-          },
-          this.barCharts[1]
-        ];
+    const sub = combineLatest([faturamento$, metas$]).pipe(
+      map(([fat, metas]) => this.gerarGraficos(fat, metas)),
+      tap(cfgs => { this.graficosConfig = cfgs; this.loading = false; }),
+      catchError(err => {
+        console.error('ERRO NAS REQUISIÇÕES:', err?.status, err?.url, err?.message, err?.error);
+        this.errorMsg = 'Não foi possível carregar os dados.';
+        this.loading = false;
+        return [];
+      })
+    ).subscribe();
 
-        
-        const now = new Date();
-        const m = now.getMonth(), y = now.getFullYear();
-        const mapaDia: Record<string, number> = {};
-        for (const f of ordenados) {
-          const d = new Date(f.data_emissao);
-          if (d.getMonth() === m && d.getFullYear() === y) {
-            const key = String(d.getDate()).padStart(2, '0');
-            mapaDia[key] = (mapaDia[key] ?? 0) + (f.valor_nota ?? 0);
-          }
-        }
-        const labelsDia = Object.keys(mapaDia).sort((a, b) => Number(a) - Number(b));
-        const valoresDia = labelsDia.map(l => mapaDia[l]);
-
-        this.highlightCharts = [
-          {
-            ...this.highlightCharts[0],
-            highlightChartData: { labels: labelsDia, datasets: [{ label: 'Faturamento', data: valoresDia, fill: false }] }
-          }
-        ];
-
-        
-        this.api.getMetas().subscribe({
-          next: (metas: Meta[]) => {
-            const ordenadas = [...metas].sort(
-              (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
-            );
-            const last = ordenadas.length ? ordenadas[ordenadas.length - 1] : undefined;
-            const ts = last?.ts ?? 0;
-            const tn = last?.tn ?? 0;
-            const metaTotal = last?.total ?? (ts + tn);
-
-            
-            const atingidoMes = valoresDia.reduce((acc, v) => acc + v, 0);
-            const pct = metaTotal > 0 ? Math.min(100, (atingidoMes / metaTotal) * 100) : 0;
-            this.metaAtingidaPct.set(pct.toFixed(1));
-
-            
-            const linhaMeta = labelsMes.map(() => metaTotal);
-            this.mixedCharts = [
-              {
-                ...this.mixedCharts[0],
-                mixedChartData: {
-                  labels: labelsMes,
-                  datasets: [
-                    { type: 'bar', label: 'Faturamento', data: valoresMes },
-                    { type: 'line', label: 'Meta Total', data: linhaMeta }
-                  ]
-                }
-              }
-            ];
-          },
-          error: (e) => console.error('Erro metas:', e)
-        });
-      },
-      error: (e) => console.error('Erro faturamento:', e)
-    });
-
-    
-    this.api.getNaturezaCusto().subscribe({
-      next: (rows: NaturezaCusto[]) => {
-        const somaPorCusto: Record<string, number> = {};
-        for (const r of rows) {
-          const chave = (r.desc_custo ?? r.desc_grupo ?? 'Sem classificação').trim();
-          const valor = this.toNumber(r.valor_item);
-          somaPorCusto[chave] = (somaPorCusto[chave] ?? 0) + valor;
-        }
-        const entries = Object.entries(somaPorCusto).sort((a, b) => b[1] - a[1]);
-        const top = entries.slice(0, 8);
-        const outros = entries.slice(8).reduce((acc, [, v]) => acc + v, 0);
-
-        const labels = top.map(([k]) => k).concat(outros > 0 ? ['Outros'] : []);
-        const valores = top.map(([, v]) => v).concat(outros > 0 ? [outros] : []);
-
-        this.barCharts = [
-          this.barCharts[0],
-          {
-            ...this.barCharts[1],
-            barChartData: { labels, datasets: [{ label: 'Despesas', data: valores }] }
-          }
-        ];
-      },
-      error: (e) => console.error('Erro natureza de custo:', e)
-    });
+    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
-  
-  async abrirModal() {
-    const modal = await this.modalCtrl.create({ component: TesteQuadradoComponent });
-    await modal.present();
-    const { data, role } = await modal.onWillDismiss();
-    console.log('Modal fechado com:', data, role);
+  // --- helpers ---
+  private toYYYYMM(d: string | Date): string {
+    const dt = (typeof d === 'string') ? new Date(d) : d;
+    const y = dt.getUTCFullYear();
+    const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
   }
 
-  entrar() {
-    this.router.navigate(['/Faturamento']);
+  private labelMes(yyyymm: string): string {
+    const [y, m] = yyyymm.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, 1));
+    return dt.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', '');
   }
 
-  
-  private brl(v: number) {
-    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  private gerarGraficos(
+    faturamentoApiData: FaturamentoAgrupado[],
+    metaApiData: MetaComparativo[],
+  ): GraficoConfig[] {
+
+    const mesesFaturamento = new Set(faturamentoApiData.map(f => f.periodo)); // 'YYYY-MM'
+    const mesesMeta = new Set(metaApiData.map(m => this.toYYYYMM(m.data as any)));
+
+    const todosMeses = Array.from(new Set([...mesesFaturamento, ...mesesMeta])).sort();
+    const xLabels = todosMeses.map(this.labelMes);
+
+    const fatIdx = new Map<string, number>();
+    for (const f of faturamentoApiData) {
+      const key = `${f.periodo}-${f.filial}`;
+      fatIdx.set(key, Number(fatIdx.get(key) ?? 0) + Number(f.valor_total ?? 0));
+    }
+
+    const metaIdx = new Map<string, { tn: number; ts: number; total: number }>();
+    for (const m of metaApiData) {
+      const mes = this.toYYYYMM(m.data as any);
+      metaIdx.set(mes, {
+        tn: Number((m as any).tn ?? 0),
+        ts: Number((m as any).ts ?? 0),
+        total: Number((m as any).total ?? 0),
+      });
+    }
+
+    const filiais = Array.from(new Set(faturamentoApiData.map(f => f.filial))).sort();
+    const graficos: GraficoConfig[] = [];
+
+    for (const filial of filiais) {
+      const metaKey = filial.toLowerCase() as 'tn' | 'ts';
+      const serieFaturamento = todosMeses.map(m => fatIdx.get(`${m}-${filial}`) ?? 0);
+      const serieMeta        = todosMeses.map(m => metaIdx.get(m)?.[metaKey] ?? 0);
+
+      graficos.push({
+        title: `Faturamento vs Meta - Filial ${filial}`,
+        xAxisLabels: xLabels,
+        yAxisOptions: [{
+          type: 'value',
+          axisLabel: { formatter: (val: number) => this.brl(val) },
+          splitLine: { show: true }
+        }],
+        seriesData: [
+          { name: `Faturamento ${filial}`, type: 'bar',  data: serieFaturamento },
+          { name: `Meta ${filial}`,        type: 'line', data: serieMeta }
+        ]
+      });
+    }
+
+    const temMetaTotal = metaApiData.some(m => (m as any).total != null);
+    if (temMetaTotal) {
+      const serieFatTotal  = todosMeses.map(m => filiais.reduce((acc, filial) => acc + (fatIdx.get(`${m}-${filial}`) ?? 0), 0));
+      const serieMetaTotal = todosMeses.map(m => metaIdx.get(m)?.total ?? 0);
+
+      graficos.push({
+        title: 'Faturamento vs Meta - Total',
+        xAxisLabels: xLabels,
+        yAxisOptions: [{
+          type: 'value',
+          axisLabel: { formatter: (val: number) => this.brl(val) }
+        }],
+        seriesData: [
+          { name: 'Faturamento Total', type: 'bar',  data: serieFatTotal },
+          { name: 'Meta Total',        type: 'line', data: serieMetaTotal }
+        ]
+      });
+    }
+
+    return graficos;
   }
-  private toNumber(x?: string | null) {
-    if (!x) return 0;
-    
-    const canon = x.includes(',') && x.includes('.')
-      ? x.replace(/\./g, '').replace(',', '.')
-      : x.replace(',', '.');
-    const n = Number(canon);
-    return isNaN(n) ? 0 : n;
-  }
+
+ 
 }

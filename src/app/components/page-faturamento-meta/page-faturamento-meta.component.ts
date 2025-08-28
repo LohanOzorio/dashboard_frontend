@@ -1,235 +1,206 @@
-import { Component, OnInit, signal } from '@angular/core';
+// page-faturamento-meta.component.ts
+import { Component, OnInit, DestroyRef } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 
-import { InfoCardComponent } from '../info-card/info-card.component';
-import { HighlightChartCardComponent } from '../highlight-chart-card/highlight-chart-card.component';
-import { ChartCardComponent } from '../chart-card/chart-card.component';
-import { TabIndicadorComponent } from '../tab-indicador/tab-indicador.component';
-import { ChartMixedCardComponent } from '../chart-mixed-card/chart-mixed-card.component';
-import { TesteQuadradoComponent } from '../teste-quadrado/teste-quadrado.component';
 import { HeaderComponent } from '../header-geral/header-geral.component';
+import { InfoCardComponent } from '../info-card/info-card.component';
+import { ChartCardComponent } from '../chart-card/chart-card.component';
 
 import { ApiService } from '../../services/api.service';
-import { Meta } from '../../models/meta.model';
-import { Faturamento } from '../../models/faturamento.model';
-import { NaturezaCusto } from '../../models/naturezacusto.model';
+import { FaturamentoAgrupado, MetaComparativo } from '../../models/comparativo.model';
+import { GraficoConfig } from 'src/app/models/grafico-config.model';
 
-type ChartData = { labels: string[]; datasets: Array<any> };
-type ChartCfg = { title: string; barChartData?: ChartData; barChartOptions?: any; highlightChartData?: ChartData; highlightChartOptions?: any; mixedChartData?: ChartData; mixedChartOptions?: any; };
+import { combineLatest } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'page-faturamento-meta',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonicModule,
-    InfoCardComponent,
-    HighlightChartCardComponent,
-    ChartCardComponent,
-    TabIndicadorComponent,
-    ChartMixedCardComponent,
-    TesteQuadradoComponent,
-    HeaderComponent
-  ],
+  imports: [CommonModule, IonicModule, HeaderComponent, InfoCardComponent, ChartCardComponent],
   templateUrl: './page-faturamento-meta.component.html',
   styleUrls: ['./page-faturamento-meta.component.scss'],
 })
 export class PageFaturamentoMetaComponent implements OnInit {
+  graficosConfig: GraficoConfig[] = [];
+  loading = false;
+  errorMsg = '';
 
-  mostrar = false;
+  constructor(private api: ApiService, private destroyRef: DestroyRef) {}
 
-  metaTS = signal<string>('R$ 0,00');
-  metaTN = signal<string>('R$ 0,00');
-  metaTotal = signal<string>('R$ 0,00');
-  fatRealMes = signal<string>('R$ 0,00');
-
-  barCharts: ChartCfg[] = [
-    {
-      title: 'Faturamento Mensal',
-      barChartData: { labels: [], datasets: [{ label: 'Faturamento', data: [] }] },
-      barChartOptions: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Faturamento por Mês' } } }
-    },
-    {
-      title: 'Despesas por Centro de Custo',
-      barChartData: { labels: [], datasets: [{ label: 'Despesas', data: [] }] },
-      barChartOptions: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Despesas por Centro de Custo' } } }
-    }
-  ];
-
-  highlightCharts: ChartCfg[] = [
-    {
-      title: 'Meta Atingida',
-      highlightChartData: { labels: ['Atingido', 'Restante'], datasets: [{ label: 'Meta', data: [0, 0] }] },
-      highlightChartOptions: { responsive: true }
-    }
-  ];
-
-  mixedCharts: ChartCfg[] = [];
-
-  constructor(private api: ApiService, private router: Router) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.carregarDados();
   }
 
-  private carregarDados() {
-    
-    this.api.getMetas().subscribe({
-  next: (metas: Meta[]) => {
-    const ordenadas = [...metas].sort(
-      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
-    );
+  // formatter BRL para tooltip/eixo (usado no ChartCard via [valueFormatter])
+  readonly brl = (v: number | string | null | undefined) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 })
+      .format(Number(v ?? 0));
 
-   
-    const last = ordenadas.length > 0 ? ordenadas[ordenadas.length - 1] : undefined;
+  carregarDados(): void {
+    this.loading = true;
+    this.errorMsg = '';
 
-    const ts = last?.ts ?? 0;
-    const tn = last?.tn ?? 0;
-    const total = last?.total ?? (ts + tn);
+    const faturamento$ = this.api.getFaturamentoAgrupado();   // -> [{periodo:'2024-01', valor_total, filial}]
+    const metas$       = this.api.getMetaComparativo();       // -> [{data:'2024-01-01', tn, ts, total}]
 
-    this.metaTS.set(this.brl(ts));
-    this.metaTN.set(this.brl(tn));
-    this.metaTotal.set(this.brl(total));
+    const sub = combineLatest([faturamento$, metas$]).pipe(
+      map(([fat, metas]) => this.gerarGraficos(fat, metas)),
+      tap(cfgs => { this.graficosConfig = cfgs; this.loading = false; }),
+      catchError(err => {
+        console.error('ERRO NAS REQUISIÇÕES:', err);
+        this.errorMsg = 'Não foi possível carregar os dados.';
+        this.loading = false;
+        return [];
+      })
+    ).subscribe();
 
-    
-    const labels = ordenadas.map(m => this.toShortDate(m.data));
-    const tsData = ordenadas.map(m => m.ts ?? 0);
-    const totalData = ordenadas.map(m => (m.total ?? ((m.ts ?? 0) + (m.tn ?? 0))));
+    this.destroyRef.onDestroy(() => sub.unsubscribe());
+  }
 
-    this.mixedCharts = [
-      {
-        title: 'Meta Total (barra) x Meta TS (linha)',
-        mixedChartData: {
-          labels,
-          datasets: [
-            { type: 'bar', label: 'Total', data: totalData },
-            { type: 'line', label: 'TS', data: tsData },
-          ],
-        },
-        mixedChartOptions: { responsive: true }
-      }
-    ];
-  },
-  error: err => console.error('Erro metas:', err)
-});
+  // --- helpers ---
+  /** '2024-01-15' | Date -> '2024-01' */
+  private toYYYYMM(d: string | Date): string {
+    const dt = (typeof d === 'string') ? new Date(d) : d;
+    const y = dt.getUTCFullYear();
+    const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  }
 
+  /** '2024-01' -> 'jan/2024' (pt-BR) */
+  private labelMes(yyyymm: string): string {
+    const [y, m] = yyyymm.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, 1));
+    return dt.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', '');
+  }
 
-    
-    this.api.getFaturamento().subscribe({
-      next: (fats: Faturamento[]) => {
-        const ordenados = [...fats].sort((a, b) => new Date(a.data_emissao).getTime() - new Date(b.data_emissao).getTime());
+  /** Normaliza nome da filial para chave de meta ('tn' | 'ts') */
+  private mapFilialToMetaKey(filial: string): 'tn' | 'ts' {
+    // remove acentos e normaliza
+    const f = filial.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (f.startsWith('tn') || f.includes('norte')) return 'tn';
+    if (f.startsWith('ts') || f.includes('sul'))   return 'ts';
+    return 'tn'; // fallback: ajuste conforme sua realidade
+  }
 
-        
-        const now = new Date();
-        const currMonth = now.getMonth();
-        const currYear = now.getFullYear();
-        const somaMes = ordenados.reduce((acc, f) => {
-          const d = new Date(f.data_emissao);
-          if (d.getMonth() === currMonth && d.getFullYear() === currYear) acc += (f.valor_nota ?? 0);
-          return acc;
-        }, 0);
-        this.fatRealMes.set(this.brl(somaMes));
+  private gerarGraficos(
+    faturamentoApiData: FaturamentoAgrupado[],
+    metaApiData: MetaComparativo[],
+  ): GraficoConfig[] {
 
-        
-        const mapaMes: Record<string, number> = {};
-        for (const f of ordenados) {
-          const d = new Date(f.data_emissao);
-          const chave = `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`; 
-          mapaMes[chave] = (mapaMes[chave] ?? 0) + (f.valor_nota ?? 0);
-        }
-        const labels = Object.keys(mapaMes);
-        const valores = labels.map(l => mapaMes[l]);
+    // 1) Meses
+    const mesesFaturamento = new Set(faturamentoApiData.map(f => f.periodo)); // 'YYYY-MM'
+    const mesesMeta = new Set(metaApiData.map(m => this.toYYYYMM(m.data as any)));
 
-       
-        this.barCharts = [
+    // 2) União ordenada
+    const todosMeses = Array.from(new Set([...mesesFaturamento, ...mesesMeta])).sort(); // 'YYYY-MM'
+    const xLabels = todosMeses.map(this.labelMes); // ex.: 'jan/2024'
+
+    // 3) Índices auxiliares
+    const fatIdx = new Map<string, number>(); // `${mes}-${filial}` -> valor_total
+    for (const f of faturamentoApiData) {
+      const key = `${f.periodo}-${f.filial}`;
+      const atual = fatIdx.get(key) ?? 0;
+      fatIdx.set(key, atual + Number(f.valor_total ?? 0));
+    }
+
+    const metaIdx = new Map<string, { tn: number; ts: number; total: number }>();
+    for (const m of metaApiData) {
+      const mes = this.toYYYYMM(m.data as any);
+      metaIdx.set(mes, {
+        tn: Number((m as any).tn ?? 0),
+        ts: Number((m as any).ts ?? 0),
+        total: Number((m as any).total ?? 0),
+      });
+    }
+
+    // 4) Filiais presentes no faturamento
+    const filiais = Array.from(new Set(faturamentoApiData.map(f => f.filial))).sort();
+
+    // Paleta local (cores definidas na página)
+    const palette = {
+      tn:    { bar: '#60a5fa', line: '#fde047' }, // azul | amarelo
+      ts:    { bar: '#a78bfa', line: '#34d399' }, // roxo | verde
+      total: { bar: '#93c5fd', line: '#22d3ee' }, // azul claro | ciano
+    } as const;
+
+    const graficos: GraficoConfig[] = [];
+
+    // 5) Um gráfico por filial
+    for (const filial of filiais) {
+      const metaKey: 'tn' | 'ts' = this.mapFilialToMetaKey(filial);
+
+      const serieFaturamento = todosMeses.map(m => fatIdx.get(`${m}-${filial}`) ?? 0);
+      const serieMeta        = todosMeses.map(m => metaIdx.get(m)?.[metaKey] ?? 0);
+
+      const cor = palette[metaKey];
+
+      graficos.push({
+        title: `Faturamento vs Meta - Filial ${filial}`,
+        xAxisLabels: xLabels,
+        yAxisOptions: [{
+          type: 'value',
+          axisLabel: { formatter: (val: number) => this.brl(val) },
+          splitLine: { show: true }
+        }],
+        seriesData: [
           {
-            ...this.barCharts[0],
-            barChartData: {
-              labels: labels,
-              datasets: [
-                {
-                  label: 'Faturamento',
-                  data: valores
-                }
-              ]
-            }
+            name: `Faturamento ${filial}`,
+            type: 'bar',
+            data: serieFaturamento,
+            itemStyle: { color: cor.bar },
+            emphasis: { focus: 'series' }
           },
-          this.barCharts[1] 
-        ];
-
-        
-        const metaAlvo = this.parseBRL(this.metaTotal()); 
-        const restante = Math.max(metaAlvo - somaMes, 0);
-        this.highlightCharts = [
           {
-            ...this.highlightCharts[0],
-            highlightChartData: {
-              labels: ['Atingido', 'Restante'],
-              datasets: [{ label: 'Meta', data: [somaMes, restante] }]
-            }
+            name: `Meta ${filial}`,
+            type: 'line',
+            data: serieMeta,
+            smooth: true,
+            lineStyle: { width: 3, color: cor.line },
+            itemStyle: { color: cor.line },
+            symbol: 'circle',
+            symbolSize: 6
           }
-        ];
-      },
-      error: err => console.error('Erro faturamento:', err)
-    });
+        ]
+      });
+    }
 
-    
-    this.api.getNaturezaCusto().subscribe({
-      next: (rows: NaturezaCusto[]) => {
-        
-        const somaPorCusto: Record<string, number> = {};
-        for (const r of rows) {
-          const chave = r.desc_custo?.trim() || 'Sem classificação';
-          const valor = this.toNumber(r.valor_item); 
-          somaPorCusto[chave] = (somaPorCusto[chave] ?? 0) + valor;
-        }
+    // 6) Gráfico Total (se houver meta.total)
+    const temMetaTotal = metaApiData.some(m => (m as any).total != null);
+    if (temMetaTotal) {
+      const serieFatTotal  = todosMeses.map(m =>
+        filiais.reduce((acc, filial) => acc + (fatIdx.get(`${m}-${filial}`) ?? 0), 0)
+      );
+      const serieMetaTotal = todosMeses.map(m => metaIdx.get(m)?.total ?? 0);
 
-        
-        const entries = Object.entries(somaPorCusto).sort((a, b) => b[1] - a[1]);
-        const top = entries.slice(0, 8);
-        const outros = entries.slice(8).reduce((acc, [, v]) => acc + v, 0);
-        const labels = top.map(([k]) => k).concat(outros > 0 ? ['Outros'] : []);
-        const valores = top.map(([, v]) => v).concat(outros > 0 ? [outros] : []);
-
-        
-        this.barCharts = [
-          this.barCharts[0],
+      graficos.push({
+        title: 'Faturamento vs Meta - Total',
+        xAxisLabels: xLabels,
+        yAxisOptions: [{
+          type: 'value',
+          axisLabel: { formatter: (val: number) => this.brl(val) }
+        }],
+        seriesData: [
           {
-            ...this.barCharts[1],
-            barChartData: {
-              labels,
-              datasets: [{ label: 'Despesas', data: valores }]
-            }
+            name: 'Faturamento Total',
+            type: 'bar',
+            data: serieFatTotal,
+            itemStyle: { color: palette.total.bar }
+          },
+          {
+            name: 'Meta Total',
+            type: 'line',
+            data: serieMetaTotal,
+            smooth: true,
+            lineStyle: { width: 3, color: palette.total.line },
+            itemStyle: { color: palette.total.line },
+            symbol: 'circle',
+            symbolSize: 6
           }
-        ];
-      },
-      error: err => console.error('Erro natureza de custo:', err)
-    });
-  }
+        ]
+      });
+    }
 
-  gerarCores(tamanho: number) {
-    const cores = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'];
-    return Array.from({ length: tamanho }, (_, i) => cores[i % cores.length]);
-  }
-
-  entrar() {
-    this.router.navigate(['/home']);
-  }
-
-  
-  private brl(v: number) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-  private parseBRL(str: string) {
-    
-    return Number((str || '0').replace(/\s|R\$/g, '').replace(/\./g, '').replace(',', '.')) || 0;
-  }
-  private toShortDate(iso: string) { return new Date(iso).toLocaleDateString(); }
-  private toNumber(x?: string | null) {
-    if (!x) return 0;
-    
-    const canon = x.includes(',') && x.includes('.') ? x.replace(/\./g, '').replace(',', '.') : x.replace(',', '.');
-    const n = Number(canon);
-    return isNaN(n) ? 0 : n;
+    return graficos;
   }
 }

@@ -3,13 +3,14 @@ import { IonicModule } from '@ionic/angular';
 import { MenuContentComponent } from './components/menu-content/menu-content.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient,HttpClientModule  } from '@angular/common/http';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [MenuContentComponent,IonicModule, CommonModule, HttpClientModule  ],
+  imports: [MenuContentComponent,IonicModule, CommonModule, HttpClientModule,NgxEchartsModule],
 })
 export class AppComponent {
   faturamento: any;

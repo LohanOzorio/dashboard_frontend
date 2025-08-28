@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { BtnMenuComponent } from './btn-menu.component';
+import { MenuButtonComponent } from './btn-menu.component';
 
-describe('BtnMenuComponent', () => {
-  let component: BtnMenuComponent;
-  let fixture: ComponentFixture<BtnMenuComponent>;
+describe('MenuButtonComponent', () => {
+  let component: MenuButtonComponent;
+  let fixture: ComponentFixture<MenuButtonComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [BtnMenuComponent],
+      imports: [MenuButtonComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BtnMenuComponent);
+    fixture = TestBed.createComponent(MenuButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
