@@ -25,10 +25,10 @@ export class ChartCardComponent implements OnChanges {
   @Input() xAxisLabels: string[] = [];
   @Input() yAxisOptions: EChartsOption['yAxis'] | undefined = [];
 
-  // >>> novos inputs só de apresentação
-  @Input() textColor = '#fff';
+  
+  @Input() textColor = '#000000ff';
   @Input() xLabelRotate = 35;
-  @Input() compactXLabels = true;
+  @Input() compactXLabels = true; 
   @Input() gridPadding: Partial<Record<'left'|'right'|'top'|'bottom', number>> =
     { left: 24, right: 16, top: 32, bottom: 56 };
 
@@ -61,20 +61,11 @@ export class ChartCardComponent implements OnChanges {
         }
       : undefined;
 
-    // compacta "jan de 2024" -> "jan/24", "jan 2024" -> "jan/24"
-    const shortX = (v: string) => {
-      if (!this.compactXLabels) return v;
-      const s = String(v).replace(/\./g, '').replace(/\s+de\s+/i, ' ').trim();
-      const [mes, ano] = s.split(/[ \/]/);
-      const yy = (ano ?? '').slice(-2);
-      return yy ? `${mes}/${yy}` : mes;
-    };
-
     const axisCommon = {
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,.35)' } },
+      axisLine: { lineStyle: { color: 'rgba(0, 0, 0, 1)' } },
       axisTick: { show: false },
       axisLabel: { color: this.textColor },
-      splitLine: { show: true, lineStyle: { color: 'rgba(255,255,255,.2)' } },
+      splitLine: { show: true, lineStyle: { color: 'rgba(0, 0, 0, 0.2)' } },
     } as const;
 
     const yAxisStyled = (yAxisNormalized?.length ? yAxisNormalized : [{ type: 'value' }]).map((y: any) => ({
@@ -96,7 +87,7 @@ export class ChartCardComponent implements OnChanges {
           restore: { show: true },
           saveAsImage: { show: true },
         },
-        iconStyle: { borderColor: this.textColor }, // ícones brancos
+        iconStyle: { borderColor: this.textColor },
       },
 
       legend: { data: legendNames, textStyle: { color: this.textColor } },
@@ -105,7 +96,8 @@ export class ChartCardComponent implements OnChanges {
         left: this.gridPadding.left ?? 24,
         right: this.gridPadding.right ?? 16,
         top: this.gridPadding.top ?? 32,
-        bottom: this.gridPadding.bottom ?? 56,
+        
+        bottom: this.gridPadding.bottom ?? 24, 
         containLabel: true
       },
 
@@ -115,17 +107,13 @@ export class ChartCardComponent implements OnChanges {
         axisPointer: { type: 'shadow' },
         ...axisCommon,
         axisLabel: {
-          ...axisCommon.axisLabel,
-          rotate: this.xLabelRotate,
-          hideOverlap: true,
-          interval: 'auto',
-          formatter: (v: string) => shortX(v),
+          
+          show: false,
         },
       }],
 
       yAxis: yAxisStyled,
-
-      // <<< séries vêm do chamador (com as cores definidas lá)
+      
       series: this.seriesData,
     };
   }

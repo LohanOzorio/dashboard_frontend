@@ -1,206 +1,212 @@
-// page-faturamento-meta.component.ts
-import { Component, OnInit, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-
 import { HeaderComponent } from '../header-geral/header-geral.component';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { ChartCardComponent } from '../chart-card/chart-card.component';
-
 import { ApiService } from '../../services/api.service';
-import { FaturamentoAgrupado, MetaComparativo } from '../../models/comparativo.model';
+import { FaturamentoAgrupado, MetaComparativo, ConsolidatedData } from '../../models/comparativo.model';
 import { GraficoConfig } from 'src/app/models/grafico-config.model';
-
-import { combineLatest } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
+import { catchError, map, tap, takeUntil } from 'rxjs/operators';
+import { TabelaComponent, TableColumn } from '../tab-indicador/tab-indicador.component';
 
 @Component({
   selector: 'page-faturamento-meta',
   standalone: true,
-  imports: [CommonModule, IonicModule, HeaderComponent, InfoCardComponent, ChartCardComponent],
+  imports: [
+    CommonModule,
+    IonicModule,
+    HeaderComponent,
+    ChartCardComponent,
+    TabelaComponent 
+  ],
   templateUrl: './page-faturamento-meta.component.html',
   styleUrls: ['./page-faturamento-meta.component.scss'],
 })
-export class PageFaturamentoMetaComponent implements OnInit {
+export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
+
+  private destroyed$ = new Subject<void>();
+
+  
+  faturamentoTN: ConsolidatedData[] = [];
+  faturamentoTS: ConsolidatedData[] = [];
+  metasComparativo: MetaComparativo[] = [];
+  faturamentoTotal: ConsolidatedData[] = []; 
+  
+
+ colunasTN: TableColumn[] = [
+  { key: 'periodo', label: 'Data Emissão', formatter: (v) => this.labelMes(v) },
+  { key: 'metaTN', label: 'Valor Meta', formatter: (v) => this.brl(v) },
+  { key: 'faturamentoTN', label: 'Valor Nota', formatter: (v) => this.brl(v) }
+];
+
+colunasTS: TableColumn[] = [
+  { key: 'periodo', label: 'Data Emissão', formatter: (v) => this.labelMes(v) },
+  { key: 'metaTS', label: 'Valor Meta', formatter: (v) => this.brl(v) },
+  { key: 'faturamentoTS', label: 'Valor Nota', formatter: (v) => this.brl(v) }
+];
+
+colunasTotal: TableColumn[] = [
+  { key: 'periodo', label: 'Período', formatter: (v) => this.labelMes(v) },
+  { key: 'faturamentoTN', label: 'TERMINAL NORTE', formatter: (v) => this.brl(v) },
+  { key: 'faturamentoTS', label: 'TERMINAL SUL', formatter: (v) => this.brl(v) },
+  { key: 'faturamentoTotal', label: 'Total', formatter: (v) => this.brl(v) }
+];
+
+
   graficosConfig: GraficoConfig[] = [];
   loading = false;
   errorMsg = '';
 
-  constructor(private api: ApiService, private destroyRef: DestroyRef) {}
+  constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.carregarDados();
   }
 
-  // formatter BRL para tooltip/eixo (usado no ChartCard via [valueFormatter])
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
+
   readonly brl = (v: number | string | null | undefined) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 })
-      .format(Number(v ?? 0));
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(Number(v ?? 0));
 
   carregarDados(): void {
     this.loading = true;
     this.errorMsg = '';
 
-    const faturamento$ = this.api.getFaturamentoAgrupado();   // -> [{periodo:'2024-01', valor_total, filial}]
-    const metas$       = this.api.getMetaComparativo();       // -> [{data:'2024-01-01', tn, ts, total}]
+    const faturamento$ = this.api.getFaturamentoAgrupado();
+    const metas$ = this.api.getMetaComparativo();
 
-    const sub = combineLatest([faturamento$, metas$]).pipe(
-      map(([fat, metas]) => this.gerarGraficos(fat, metas)),
-      tap(cfgs => { this.graficosConfig = cfgs; this.loading = false; }),
+    combineLatest([faturamento$, metas$]).pipe(
+      tap(([fat, metas]) => {
+        
+        const dadosConsolidados = this.consolidarDados(fat, metas);
+
+        
+        this.faturamentoTN = dadosConsolidados;
+        this.faturamentoTS = dadosConsolidados;
+        this.faturamentoTotal = dadosConsolidados; 
+        this.metasComparativo = metas;
+
+        
+        this.graficosConfig = this.gerarGraficos(dadosConsolidados);
+
+        this.loading = false;
+      }),
       catchError(err => {
         console.error('ERRO NAS REQUISIÇÕES:', err);
         this.errorMsg = 'Não foi possível carregar os dados.';
         this.loading = false;
         return [];
-      })
+      }),
+      takeUntil(this.destroyed$)
     ).subscribe();
-
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
-  // --- helpers ---
-  /** '2024-01-15' | Date -> '2024-01' */
+  private consolidarDados(
+    faturamentoApiData: FaturamentoAgrupado[],
+    metaApiData: MetaComparativo[]
+  ): ConsolidatedData[] {
+    const dataMap = new Map<string, ConsolidatedData>();
+
+    for (const item of faturamentoApiData) {
+      if (!item.periodo) continue;
+      const mes = this.toYYYYMM(item.periodo);
+      
+     
+      if (mes >= '2024-01' && mes <= '2024-12') {
+        if (!dataMap.has(mes)) {
+          dataMap.set(mes, {
+            periodo: mes,
+            faturamentoTN: 0,
+            faturamentoTS: 0,
+            metaTN: 0,
+            metaTS: 0,
+            metaTotal: 0,
+            faturamentoTotal: 0
+          });
+        }
+        const dadosMes = dataMap.get(mes)!;
+        if (item.filial.toUpperCase().includes('NORTE')) {
+          dadosMes.faturamentoTN += Number(item.valor_total ?? 0);
+        } else if (item.filial.toUpperCase().includes('SUL')) {
+          dadosMes.faturamentoTS += Number(item.valor_total ?? 0);
+        }
+        dadosMes.faturamentoTotal = dadosMes.faturamentoTN + dadosMes.faturamentoTS;
+      }
+    }
+
+
+    for (const item of metaApiData) {
+      const mes = this.toYYYYMM(item.data);
+
+      if (mes >= '2024-01' && mes <= '2024-12') {
+        if (!dataMap.has(mes)) {
+          dataMap.set(mes, {
+            periodo: mes,
+            faturamentoTN: 0,
+            faturamentoTS: 0,
+            metaTN: 0,
+            metaTS: 0,
+            metaTotal: 0,
+            faturamentoTotal: 0
+          });
+        }
+        const dadosMes = dataMap.get(mes)!;
+        dadosMes.metaTN += Number(item.tn ?? 0);
+        dadosMes.metaTS += Number(item.ts ?? 0);
+        dadosMes.metaTotal += Number(item.total ?? 0);
+      }
+    }
+
+    return Array.from(dataMap.values()).sort((a, b) => a.periodo.localeCompare(b.periodo));
+  }
+  
+ 
   private toYYYYMM(d: string | Date): string {
-    const dt = (typeof d === 'string') ? new Date(d) : d;
-    const y = dt.getUTCFullYear();
-    const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    if (typeof d === 'string' && d.length >= 7) return d.slice(0, 7);
+    const date = new Date(d);
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
     return `${y}-${m}`;
   }
 
-  /** '2024-01' -> 'jan/2024' (pt-BR) */
   private labelMes(yyyymm: string): string {
     const [y, m] = yyyymm.split('-').map(Number);
     const dt = new Date(Date.UTC(y, m - 1, 1));
-    return dt.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', '');
+    const mes = dt.toLocaleDateString('pt-BR', { month: 'short', timeZone: 'UTC' }).replace('.', '');
+    const ano = dt.toLocaleDateString('pt-BR', { year: '2-digit', timeZone: 'UTC' });
+    return `${mes.charAt(0).toUpperCase() + mes.slice(1)}/${ano}`;
   }
 
-  /** Normaliza nome da filial para chave de meta ('tn' | 'ts') */
-  private mapFilialToMetaKey(filial: string): 'tn' | 'ts' {
-    // remove acentos e normaliza
-    const f = filial.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    if (f.startsWith('tn') || f.includes('norte')) return 'tn';
-    if (f.startsWith('ts') || f.includes('sul'))   return 'ts';
-    return 'tn'; // fallback: ajuste conforme sua realidade
-  }
+  private gerarGraficos(dadosConsolidados: ConsolidatedData[]): GraficoConfig[] {
+    const xLabels = dadosConsolidados.map(item => this.labelMes(item.periodo));
+    const palette = { bar: '#0050fcff', line: '#fd2a2aff' };
 
-  private gerarGraficos(
-    faturamentoApiData: FaturamentoAgrupado[],
-    metaApiData: MetaComparativo[],
-  ): GraficoConfig[] {
-
-    // 1) Meses
-    const mesesFaturamento = new Set(faturamentoApiData.map(f => f.periodo)); // 'YYYY-MM'
-    const mesesMeta = new Set(metaApiData.map(m => this.toYYYYMM(m.data as any)));
-
-    // 2) União ordenada
-    const todosMeses = Array.from(new Set([...mesesFaturamento, ...mesesMeta])).sort(); // 'YYYY-MM'
-    const xLabels = todosMeses.map(this.labelMes); // ex.: 'jan/2024'
-
-    // 3) Índices auxiliares
-    const fatIdx = new Map<string, number>(); // `${mes}-${filial}` -> valor_total
-    for (const f of faturamentoApiData) {
-      const key = `${f.periodo}-${f.filial}`;
-      const atual = fatIdx.get(key) ?? 0;
-      fatIdx.set(key, atual + Number(f.valor_total ?? 0));
-    }
-
-    const metaIdx = new Map<string, { tn: number; ts: number; total: number }>();
-    for (const m of metaApiData) {
-      const mes = this.toYYYYMM(m.data as any);
-      metaIdx.set(mes, {
-        tn: Number((m as any).tn ?? 0),
-        ts: Number((m as any).ts ?? 0),
-        total: Number((m as any).total ?? 0),
-      });
-    }
-
-    // 4) Filiais presentes no faturamento
-    const filiais = Array.from(new Set(faturamentoApiData.map(f => f.filial))).sort();
-
-    // Paleta local (cores definidas na página)
-    const palette = {
-      tn:    { bar: '#60a5fa', line: '#fde047' }, // azul | amarelo
-      ts:    { bar: '#a78bfa', line: '#34d399' }, // roxo | verde
-      total: { bar: '#93c5fd', line: '#22d3ee' }, // azul claro | ciano
-    } as const;
-
-    const graficos: GraficoConfig[] = [];
-
-    // 5) Um gráfico por filial
-    for (const filial of filiais) {
-      const metaKey: 'tn' | 'ts' = this.mapFilialToMetaKey(filial);
-
-      const serieFaturamento = todosMeses.map(m => fatIdx.get(`${m}-${filial}`) ?? 0);
-      const serieMeta        = todosMeses.map(m => metaIdx.get(m)?.[metaKey] ?? 0);
-
-      const cor = palette[metaKey];
-
-      graficos.push({
-        title: `Faturamento vs Meta - Filial ${filial}`,
+    return [
+      
+      {
+        title: 'Filial TERMINAL NORTE',
         xAxisLabels: xLabels,
-        yAxisOptions: [{
-          type: 'value',
-          axisLabel: { formatter: (val: number) => this.brl(val) },
-          splitLine: { show: true }
-        }],
+        yAxisOptions: [{ type: 'value', axisLabel: { formatter: (val: number) => this.brl(val) }, splitLine: { show: true } }],
         seriesData: [
-          {
-            name: `Faturamento ${filial}`,
-            type: 'bar',
-            data: serieFaturamento,
-            itemStyle: { color: cor.bar },
-            emphasis: { focus: 'series' }
-          },
-          {
-            name: `Meta ${filial}`,
-            type: 'line',
-            data: serieMeta,
-            smooth: true,
-            lineStyle: { width: 3, color: cor.line },
-            itemStyle: { color: cor.line },
-            symbol: 'circle',
-            symbolSize: 6
-          }
+          { name: 'Faturamento TN', type: 'bar', data: dadosConsolidados.map(d => d.faturamentoTN), itemStyle: { color: palette.bar }, emphasis: { focus: 'series' } },
+          { name: 'Meta TN', type: 'line', data: dadosConsolidados.map(d => d.metaTN), smooth: true, lineStyle: { width: 3, color: palette.line }, itemStyle: { color: palette.line }, symbol: 'circle', symbolSize: 6 }
         ]
-      });
-    }
-
-    // 6) Gráfico Total (se houver meta.total)
-    const temMetaTotal = metaApiData.some(m => (m as any).total != null);
-    if (temMetaTotal) {
-      const serieFatTotal  = todosMeses.map(m =>
-        filiais.reduce((acc, filial) => acc + (fatIdx.get(`${m}-${filial}`) ?? 0), 0)
-      );
-      const serieMetaTotal = todosMeses.map(m => metaIdx.get(m)?.total ?? 0);
-
-      graficos.push({
-        title: 'Faturamento vs Meta - Total',
+      },
+      
+      {
+        title: 'Filial TERMINAL SUL',
         xAxisLabels: xLabels,
-        yAxisOptions: [{
-          type: 'value',
-          axisLabel: { formatter: (val: number) => this.brl(val) }
-        }],
+        yAxisOptions: [{ type: 'value', axisLabel: { formatter: (val: number) => this.brl(val) }, splitLine: { show: true } }],
         seriesData: [
-          {
-            name: 'Faturamento Total',
-            type: 'bar',
-            data: serieFatTotal,
-            itemStyle: { color: palette.total.bar }
-          },
-          {
-            name: 'Meta Total',
-            type: 'line',
-            data: serieMetaTotal,
-            smooth: true,
-            lineStyle: { width: 3, color: palette.total.line },
-            itemStyle: { color: palette.total.line },
-            symbol: 'circle',
-            symbolSize: 6
-          }
+          { name: 'Faturamento TS', type: 'bar', data: dadosConsolidados.map(d => d.faturamentoTS), itemStyle: { color: palette.bar }, emphasis: { focus: 'series' } },
+          { name: 'Meta TS', type: 'line', data: dadosConsolidados.map(d => d.metaTS), smooth: true, lineStyle: { width: 3, color: palette.line }, itemStyle: { color: palette.line }, symbol: 'circle', symbolSize: 6 }
         ]
-      });
-    }
-
-    return graficos;
+      },
+    ];
   }
 }

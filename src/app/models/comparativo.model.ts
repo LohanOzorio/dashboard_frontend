@@ -11,3 +11,13 @@ export interface MetaComparativo {
   ts: number;
   total: number;
 }
+
+export interface ConsolidatedData {
+  periodo: string;       
+  faturamentoTN: number; 
+  faturamentoTS: number; 
+  metaTN: number;        
+  metaTS: number;        
+  metaTotal: number;     
+  faturamentoTotal: number; 
+}

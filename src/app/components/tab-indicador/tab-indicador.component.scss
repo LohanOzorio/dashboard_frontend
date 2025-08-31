@@ -1,26 +1,52 @@
-ion-card {
-  margin: 16px;
-  
+/* Altura das linhas mais compacta */
+::ng-deep .mat-mdc-row,
+::ng-deep .mat-mdc-header-row {
+  height: 20px !important;
+  transition: background-color 0.3s ease;
+}
 
-  .header {
-    background: #c30000;
-    color: white;
-    font-weight: bold;
-    border-radius: 4px 4px 0 0;
-    padding: 8px 0;
-  }
+/* Células e Cabeçalho com padding reduzido */
+::ng-deep .mat-mdc-cell,
+::ng-deep .mat-mdc-header-cell {
+  padding: 4px 12px !important;
+  font-size: 14px !important;
+  line-height: 1.2;
+  border-bottom: 1px solid #dcdcdc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
 
-  ion-row {
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
-  }
+/* Resto do CSS (cabeçalho, zebra, hover, etc.) */
+::ng-deep .mat-mdc-header-cell {
+  background-color: #0050fcff !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-bottom: 2px solid #fff;
+}
 
-  .total {
-    background: #f0f0f0;
-    font-weight: bold;
-  }
+::ng-deep .mat-mdc-row:nth-child(even) {
+  background: #f7f9fc;
+}
 
-  ion-col {
-    text-align: left;
-  }
+::ng-deep .mat-mdc-row:hover {
+  background: #e4ebff;
+}
+
+::ng-deep .mat-mdc-table {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+::ng-deep .mat-mdc-table-container {
+  border-radius: 8px;
+}
+
+#table-container {
+margin-top:0px;
+border-radius: 1px solid red;
 }

@@ -1,40 +1,33 @@
-import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+// Importações do Angular Material
+import { MatTableModule } from '@angular/material/table';
+import { IonCard } from "@ionic/angular/standalone";
+
+
+export interface TableColumn {
+  key: string;
+  label: string;
+
+  formatter?: (value: any, row?: any) => string;
+}
+
 @Component({
-  standalone: true,
-  imports: [CommonModule, IonicModule],
-  selector: 'tab-indicador',
+  selector: 'app-tabela',
   templateUrl: './tab-indicador.component.html',
   styleUrls: ['./tab-indicador.component.scss'],
+  standalone: true,
+  imports: [ CommonModule, MatTableModule] 
 })
-export class TabIndicadorComponent  {
+export class TabelaComponent {
+  @Input({ required: true }) data!: any[];
+  @Input({ required: true }) columns!: TableColumn[];
 
-  dados = [
-    { mes: 'JAN/2025', valor: 1450000, valormota: 1497476.04 },
-    { mes: 'FEV/2025', valor: 1450000, valormota: 1094746.81 },
-    { mes: 'MAR/2025', valor: 1450000, valormota: 1672659.92 },
-    { mes: 'ABR/2025', valor: 1450000, valormota: 2002458.94 },
-    { mes: 'MAI/2025', valor: 1450000, valormota: 850703.11 },
-    { mes: 'JUN/2025', valor: 1450000 },
-    { mes: 'JUL/2025', valor: 1450000 },
-    { mes: 'AGO/2025', valor: 1450000 },
-    { mes: 'SET/2025', valor: 1450000 },
-    { mes: 'OUT/2025', valor: 1450000 },
-    { mes: 'NOV/2025', valor: 1450000 },
-    { mes: 'DEZ/2025', valor: 1450000 },
-  ];
+  // As colunas que o MatTable vai renderizar
+  displayedColumns: string[] = [];
 
-  get totalValor(): number {
-    return this.dados.reduce((acc, item) => acc + item.valor, 0);
-  }
-
-  get totalValormota(): number {
-    return this.dados.reduce((acc, item) => acc + (item.valormota || 0), 0);
-  }
-
-  formatar(valor: number): string {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  ngOnInit() {
+    this.displayedColumns = this.columns.map(col => col.key);
   }
 }

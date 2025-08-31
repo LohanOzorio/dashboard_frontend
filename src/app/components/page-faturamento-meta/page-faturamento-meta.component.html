@@ -1,4 +1,3 @@
-
 <div class="ion-page" id="main-content">
   <ion-header translucent="true">
     <ion-toolbar>
@@ -7,31 +6,34 @@
   </ion-header>
 
   <ion-content [fullscreen]="true">
-    <ion-grid [fixed]="true">
-      <ion-row class="ion-margin-bottom">
-        <ion-col size="12" size-md="3">
-          <app-info-card title="Meta TS" color="primary"></app-info-card>
+    <ion-grid [fixed]="true" class="full-height">
+    <ion-row class="ion-margin-top ion-align-items-stretch">
+        <ion-col size="12" size-md="3" class="column-container">
+          <app-tabela [data]="faturamentoTN" [columns]="colunasTN"></app-tabela>
+          <app-tabela [data]="faturamentoTS" [columns]="colunasTS"></app-tabela>
         </ion-col>
-        <ion-col size="12" size-md="3">
-          <app-info-card title="Meta TN" color="primary"></app-info-card>
-        </ion-col>
-        <ion-col size="12" size-md="3">
-          <app-info-card title="Meta Total" color="primary"></app-info-card>
-        </ion-col>
-        <ion-col size="12" size-md="3">
-          <app-info-card title="Faturamento Real" color="primary"></app-info-card>
-        </ion-col>
-      </ion-row>
 
-      <ion-row>
-        <ion-col *ngFor="let config of graficosConfig" size="12" size-md="6">
+        <ion-col size="12" size-md="6" class="column-container">
           <app-chart-card
-            [title]="config.title"
-            [seriesData]="config.seriesData"
-            [xAxisLabels]="config.xAxisLabels"
-            [yAxisOptions]="config.yAxisOptions"
-            [valueFormatter]="brl">
-          </app-chart-card>
+            [title]="'Faturamento x Meta Filial Norte'"
+            [seriesData]="graficosConfig[0].seriesData"
+            [xAxisLabels]="graficosConfig[0].xAxisLabels"
+            [yAxisOptions]="graficosConfig[0].yAxisOptions"
+            [valueFormatter]="brl"
+          ></app-chart-card>
+
+          <app-chart-card
+            [title]="'Faturamento x Meta Filial Sul'"
+            [seriesData]="graficosConfig[1].seriesData"
+            [xAxisLabels]="graficosConfig[1].xAxisLabels"
+            [yAxisOptions]="graficosConfig[1].yAxisOptions"
+            [valueFormatter]="brl"
+          ></app-chart-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="3" class="column-container">
+          <h2>Faturamento e Meta Total</h2>
+          <app-tabela [data]="faturamentoTotal" [columns]="colunasTotal"></app-tabela>
         </ion-col>
       </ion-row>
     </ion-grid>
