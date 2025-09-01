@@ -1,16 +1,39 @@
 <div class="ion-page" id="main-content">
-  <ion-header translucent="true">
+ <ion-header translucent="true">
     <ion-toolbar>
       <app-header-geral headerTitle="Faturamento Real x Meta"></app-header-geral>
+      
+      <ion-select
+        [(ngModel)]="selectedPeriodo"
+        (ionChange)="aplicarFiltro()"
+        interface="popover"
+        placeholder="Filtrar"
+        slot="end"  id="select-periodo"
+      >
+        <ion-select-option *ngFor="let ano of anosDisponiveis" [value]="ano">
+          {{ ano }}
+        </ion-select-option>
+        <ion-select-option *ngFor="let mes of mesesDisponiveis" [value]="mes.value">
+          {{ mes.label }}
+        </ion-select-option>
+      </ion-select>
+      
     </ion-toolbar>
   </ion-header>
 
+
+
+
+
+
   <ion-content [fullscreen]="true">
+    <div id="dashboard-container" *ngIf="!loading">
+      <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
       <ion-grid>
-    <ion-row>
-      <ion-col> 
-        <app-tabela [data]="faturamentoTN" [columns]="colunasTN"></app-tabela>
-      </ion-col>
+        <ion-row id="row-one">
+        <ion-col> 
+          <app-tabela [data]="faturamentoTN" [columns]="colunasTN"></app-tabela>
+        </ion-col>
       <ion-col>
         <app-chart-card
             [title]="'Faturamento x Meta Filial Norte'"
@@ -20,12 +43,13 @@
             [valueFormatter]="brl"
           ></app-chart-card>
         </ion-col>
-      <ion-col> <app-tabela [data]="faturamentoTotal" [columns]="colunasTotal"></app-tabela></ion-col>
-    </ion-row>
-  </ion-grid>
-
-  <ion-grid>
-    <ion-row>
+      <ion-col>
+         <app-tabela [data]="faturamentoTotal" [columns]="colunasTotal"></app-tabela>
+      </ion-col>
+        </ion-row>
+      </ion-grid>
+      <ion-grid>
+        <ion-row id="row-two">
       <ion-col><app-tabela [data]="faturamentoTS" [columns]="colunasTS"></app-tabela></ion-col>
       <ion-col><app-chart-card
             [title]="'Faturamento x Meta Filial Sul'"
@@ -34,8 +58,15 @@
             [yAxisOptions]="graficosConfig[1].yAxisOptions"
             [valueFormatter]="brl"
           ></app-chart-card></ion-col>
-           <ion-col>3</ion-col>
-    </ion-row>
-  </ion-grid>
+           <ion-col><app-chart-card
+            [title]="'Faturamento x Meta Filial Sul'"
+            [seriesData]="graficosConfig[2].seriesData"
+            [xAxisLabels]="graficosConfig[2].xAxisLabels"
+            [yAxisOptions]="graficosConfig[2].yAxisOptions"
+            [valueFormatter]="brl"
+          ></app-chart-card></ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
   </ion-content>
 </div>

@@ -1,0 +1,44 @@
+
+
+#dashboard-container {
+    margin-top: 8px;
+    border: 0.4px solid rgb(204, 204, 204) ;
+    border-radius: 16px;
+}
+
+
+#row-one{
+
+    display: flex;
+    align-items: center;
+    padding: 20px;
+
+}   
+
+#row-two{
+    display: flex;
+    align-items: center;
+    padding: 20px;
+
+} 
+
+#select-periodo{
+   
+    margin-left: auto;
+    --background: #2e43ac;
+   
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    
+}
+
+ion-toolbar {
+    --background: #2e43ac; 
+    --color: #ffffff; 
+
+ 
+  
+
+}

@@ -35,11 +35,11 @@
 }
 
 ::ng-deep .mat-mdc-table {
-  border: 1px solid #ccc;
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 0.4px solid rgb(187, 187, 187);
+  
 }
 
 ::ng-deep .mat-mdc-table-container {
@@ -47,6 +47,6 @@
 }
 
 #table-container {
-margin-top:0px;
-border-radius: 1px solid red;
+  margin-top:0px;
+  border-radius: 1px solid red;
 }
