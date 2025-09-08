@@ -1,3 +1,9 @@
-:host{
-    --ion-color-primary: #3880ff;
+
+
+ion-item{
+    --ion-item-color: #fff;
+    font-weight: 500;
+    border-radius: 8px;
+    border:0.4px solid rgb(197, 197, 197);
+    margin: 4px 0;
 }

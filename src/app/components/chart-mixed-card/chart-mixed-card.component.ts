@@ -13,21 +13,27 @@ import { EChartsOption } from 'echarts';
   styleUrls: ['./chart-mixed-card.component.scss'],
 })
 export class ChartMixedCardComponent {
-  @Input() title!: string;
-   @Input() chartOptions: EChartsOption = {
-    xAxis: {
-      type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        data: [120, 200, 150, 80, 70, 110, 130],
-        type: 'bar',
+   @Input() data: any[][] = []; // receber dados no formato que você mostrou
+
+  options: any = {};
+
+  ngOnInit() {
+    this.options = this.getOptions(this.data);
+  }
+
+  getOptions(dataset: any[][]) {
+    return {
+      legend: {},
+      tooltip: {},
+      dataset: {
+        source: dataset
       },
-    ],
-  };
+      xAxis: { type: 'category' },
+      yAxis: {},
+      series: Array(dataset[0].length - 1).fill({ type: 'bar' }) 
+
+    }
+
+}
 
 }

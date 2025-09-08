@@ -10,7 +10,6 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
   },
-
   {
     path: 'home',
     loadComponent: () => import('./pages/home/home.page').then( m => m.HomePage)
@@ -18,7 +17,12 @@ export const routes: Routes = [
   {
     path: 'Faturamento',
     loadComponent: () => import('./pages/faturamento/faturamento.page').then( m => m.FaturamentoPage)
+  },
+  {
+    path: 'Faturamento-geral',
+    loadComponent: () => import('./pages/faturamento-geral/faturamento-geral.page').then( m => m.FaturamentoGeralPage)
   }
+
 ];
 
 

@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { TesteQuadradoComponent } from './teste-quadrado.component';
+import { kpiCardComponent} from './info-card.component';
 
-describe('TesteQuadradoComponent', () => {
-  let component: TesteQuadradoComponent;
-  let fixture: ComponentFixture<TesteQuadradoComponent>;
+describe('InfoCardComponent', () => {
+  let component: kpiCardComponent;
+  let fixture: ComponentFixture<kpiCardComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ TesteQuadradoComponent ],
+      declarations: [ kpiCardComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TesteQuadradoComponent);
+    fixture = TestBed.createComponent(kpiCardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

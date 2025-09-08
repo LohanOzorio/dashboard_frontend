@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header-geral/header-geral.component';
-import { InfoCardComponent } from '../info-card/info-card.component';
+import { kpiCardComponent } from '../kpi-component/info-card.component';
 import { ChartCardComponent } from '../chart-card/chart-card.component';
 import { ApiService } from '../../services/api.service';
 import { FaturamentoAgrupado, MetaComparativo, ConsolidatedData } from '../../models/comparativo.model';
@@ -11,6 +11,7 @@ import { GraficoConfig } from 'src/app/models/grafico-config.model';
 import { combineLatest, Subject, EMPTY } from 'rxjs';
 import { catchError, tap, takeUntil } from 'rxjs/operators';
 import { TabelaComponent, TableColumn } from '../tab-indicador/tab-indicador.component';
+import { DateFilterComponent } from '../date-filter/date-filter.component';
 
 @Component({
   selector: 'page-faturamento-meta',
@@ -21,14 +22,13 @@ import { TabelaComponent, TableColumn } from '../tab-indicador/tab-indicador.com
     FormsModule,
     HeaderComponent,
     ChartCardComponent,
-    TabelaComponent
+    TabelaComponent,
+    DateFilterComponent
   ],
   templateUrl: './page-faturamento-meta.component.html',
   styleUrls: ['./page-faturamento-meta.component.scss'],
 })
 export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
-
-
   
   private destroyed$ = new Subject<void>();
 
@@ -56,31 +56,27 @@ export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
     { key: 'faturamentoTotal', label: 'Total', formatter: (v) => this.brl(v) }
   ];
 
+  getTotalRow(data: ConsolidatedData[], columns: TableColumn[]) {
+    const total: any = {};
+
+    columns.forEach(col => {
+      if (col.key === 'periodo') {
+        total[col.key] = 'TOTAL'; 
+      } else {
+        total[col.key] = data.reduce((acc, row) => acc + (Number((row as any)[col.key]) || 0), 0);
+      }
+    });
+
+    return total;
+  }
+
   graficosConfig: GraficoConfig[] = [];
   loading = false;
   errorMsg = '';
 
-  
-  selectedPeriodo: string = '2024'; 
-  anosDisponiveis: string[] = ['2024', '2025'];
-  mesesDisponiveis = [
-    { label: 'Jan/24', value: '2024-01' },
-    { label: 'Fev/24', value: '2024-02' },
-    { label: 'Mar/24', value: '2024-03' },
-    { label: 'Abr/24', value: '2024-04' },
-    { label: 'Mai/24', value: '2024-05' },
-    { label: 'Jun/24', value: '2024-06' },
-    { label: 'Jul/24', value: '2024-07' },
-    { label: 'Ago/24', value: '2024-08' },
-    { label: 'Set/24', value: '2024-09' },
-    { label: 'Out/24', value: '2024-10' },
-    { label: 'Nov/24', value: '2024-11' },
-    { label: 'Dez/24', value: '2024-12' }
-  ];
-
   private dadosConsolidadosOriginais: ConsolidatedData[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private modalCtrl: ModalController) {}
 
   ngOnInit(): void {
     this.carregarDados();
@@ -94,9 +90,7 @@ export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
   readonly brl = (v: number | string | null | undefined) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(Number(v ?? 0));
 
-    
-
-    carregarDados(): void {
+  carregarDados(): void {
     this.loading = true;
     this.errorMsg = '';
 
@@ -105,7 +99,8 @@ export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
         tap(([fat, metas]) => {
           this.dadosConsolidadosOriginais = this.consolidarDados(fat, metas);
           this.metasComparativo = metas;
-          this.aplicarFiltro();
+          // Aplica o filtro inicial ao carregar os dados (por padrão, todo o ano atual)
+          this.onFilterChange({ type: 'year', value: new Date().getFullYear() });
           this.loading = false;
         }),
         catchError(err => {
@@ -118,13 +113,25 @@ export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
       ).subscribe();
   }
 
-  aplicarFiltro(): void {
-    let dadosFiltrados: ConsolidatedData[];
+  
+  onFilterChange(filter: { type: string, value: any }): void {
+    let dadosFiltrados: ConsolidatedData[] = [];
+    this.modalCtrl.dismiss(); 
 
-    if (/^\d{4}$/.test(this.selectedPeriodo)) {
-      dadosFiltrados = this.dadosConsolidadosOriginais.filter(d => d.periodo.startsWith(this.selectedPeriodo));
+    if (filter.type === 'day') {
+  
+      const selectedDate = filter.value as Date;
+      const selectedYYYYMM = selectedDate.toISOString().slice(0, 7);
+      dadosFiltrados = this.dadosConsolidadosOriginais.filter(d => d.periodo === selectedYYYYMM);
+    } else if (filter.type === 'month') {
+      const selectedYYYYMM = filter.value as string;
+      dadosFiltrados = this.dadosConsolidadosOriginais.filter(d => d.periodo === selectedYYYYMM);
+    } else if (filter.type === 'year') {
+      const selectedYear = filter.value as number;
+      dadosFiltrados = this.dadosConsolidadosOriginais.filter(d => d.periodo.startsWith(selectedYear.toString()));
     } else {
-      dadosFiltrados = this.dadosConsolidadosOriginais.filter(d => d.periodo === this.selectedPeriodo);
+      
+      dadosFiltrados = this.dadosConsolidadosOriginais;
     }
 
     this.faturamentoTN = dadosFiltrados;
@@ -135,52 +142,50 @@ export class PageFaturamentoMetaComponent implements OnInit, OnDestroy {
 
   private consolidarDados(faturamentoApiData: FaturamentoAgrupado[], metaApiData: MetaComparativo[]): ConsolidatedData[] {
     const dataMap = new Map<string, ConsolidatedData>();
-
+    
+ 
     for (const item of faturamentoApiData) {
       if (!item.periodo) continue;
       const mes = this.toYYYYMM(item.periodo);
-
-      if (mes >= '2024-01' && mes <= '2025-12') {
-        if (!dataMap.has(mes)) {
-          dataMap.set(mes, {
-            periodo: mes,
-            faturamentoTN: 0,
-            faturamentoTS: 0,
-            metaTN: 0,
-            metaTS: 0,
-            metaTotal: 0,
-            faturamentoTotal: 0
-          });
-        }
-        const dadosMes = dataMap.get(mes)!;
-        if (item.filial.toUpperCase().includes('NORTE')) {
-          dadosMes.faturamentoTN += Number(item.valor_total ?? 0);
-        } else if (item.filial.toUpperCase().includes('SUL')) {
-          dadosMes.faturamentoTS += Number(item.valor_total ?? 0);
-        }
-        dadosMes.faturamentoTotal = dadosMes.faturamentoTN + dadosMes.faturamentoTS;
+      
+      if (!dataMap.has(mes)) {
+        dataMap.set(mes, {
+          periodo: mes,
+          faturamentoTN: 0,
+          faturamentoTS: 0,
+          metaTN: 0,
+          metaTS: 0,
+          metaTotal: 0,
+          faturamentoTotal: 0
+        });
       }
+      const dadosMes = dataMap.get(mes)!;
+      if (item.filial.toUpperCase().includes('NORTE')) {
+        dadosMes.faturamentoTN += Number(item.valor_total ?? 0);
+      } else if (item.filial.toUpperCase().includes('SUL')) {
+        dadosMes.faturamentoTS += Number(item.valor_total ?? 0);
+      }
+      dadosMes.faturamentoTotal = dadosMes.faturamentoTN + dadosMes.faturamentoTS;
     }
 
+    
     for (const item of metaApiData) {
       const mes = this.toYYYYMM(item.data);
-      if (mes >= '2024-01' && mes <= '2025-12') {
-        if (!dataMap.has(mes)) {
-          dataMap.set(mes, {
-            periodo: mes,
-            faturamentoTN: 0,
-            faturamentoTS: 0,
-            metaTN: 0,
-            metaTS: 0,
-            metaTotal: 0,
-            faturamentoTotal: 0
-          });
-        }
-        const dadosMes = dataMap.get(mes)!;
-        dadosMes.metaTN += Number(item.tn ?? 0);
-        dadosMes.metaTS += Number(item.ts ?? 0);
-        dadosMes.metaTotal += Number(item.total ?? 0);
+      if (!dataMap.has(mes)) {
+        dataMap.set(mes, {
+          periodo: mes,
+          faturamentoTN: 0,
+          faturamentoTS: 0,
+          metaTN: 0,
+          metaTS: 0,
+          metaTotal: 0,
+          faturamentoTotal: 0
+        });
       }
+      const dadosMes = dataMap.get(mes)!;
+      dadosMes.metaTN += Number(item.tn ?? 0);
+      dadosMes.metaTS += Number(item.ts ?? 0);
+      dadosMes.metaTotal += Number(item.total ?? 0);
     }
 
     return Array.from(dataMap.values()).sort((a, b) => a.periodo.localeCompare(b.periodo));

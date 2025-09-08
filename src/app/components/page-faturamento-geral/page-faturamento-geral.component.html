@@ -1,0 +1,61 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <app-header-geral headerTitle="Faturamento Geral"></app-header-geral>
+    <ion-buttons slot="end">
+      <ion-button id="open-filter-modal">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <app-tabela [data]="topServicos" [columns]="columnsServicos"></app-tabela>
+      </ion-col>
+      <ion-col>
+         <app-chart-card
+            [title]="chartTitle"
+            [xAxisLabels]="xAxisLabels"
+            [seriesData]="seriesData"
+            [yAxisOptions]="yAxisOptions"
+          ></app-chart-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <app-tabela [data]="topClientes" [columns]="columnsClientes"></app-tabela>
+      </ion-col>
+      <ion-col class="col-white-space" id="whiteSpace">
+        white space here
+      </ion-col>
+      <ion-col>
+        <app-tabela [data]="faturamentoDiario" [columns]="columnsFaturamentoDiario"></app-tabela>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Modal do filtro de data -->
+  <ion-modal trigger="open-filter-modal" [backdropDismiss]="true">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Filtrar por Período</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="dismissModal()">Fechar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <app-date-filter
+          (filterSelected)="onFilterChange($event)">
+        </app-date-filter>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

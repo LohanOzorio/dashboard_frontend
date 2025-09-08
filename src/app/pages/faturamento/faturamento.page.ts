@@ -13,34 +13,5 @@ import { PageFaturamentoMetaComponent } from 'src/app/components/page-faturament
   imports: [IonicModule, CommonModule, FormsModule,PageFaturamentoMetaComponent]
 })
 export class FaturamentoPage {
-
-   t = 'Teste de Gráfico';
-
-  chartData = {
-    labels: ['Produto A', 'Produto B', 'Produto C'],
-    datasets: [
-      {
-        label: 'Vendas',
-        data: [100, 250, 300],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
-      }
-    ]
-  };
-
-  chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Gráfico de Vendas'
-      }
-    }
-  };
-
-  type: ChartType = 'bar';
-
   
 }

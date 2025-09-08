@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { InfoCardComponent } from './info-card.component';
+import { PageFaturamentoGeralComponent } from './page-faturamento-geral.component';
 
-describe('InfoCardComponent', () => {
-  let component: InfoCardComponent;
-  let fixture: ComponentFixture<InfoCardComponent>;
+describe('PageFaturamentoGeralComponent', () => {
+  let component: PageFaturamentoGeralComponent;
+  let fixture: ComponentFixture<PageFaturamentoGeralComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ InfoCardComponent ],
+      declarations: [ PageFaturamentoGeralComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InfoCardComponent);
+    fixture = TestBed.createComponent(PageFaturamentoGeralComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

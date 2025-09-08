@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { HighlightChartCardComponent } from './highlight-chart-card.component';
+import { DateFilterComponent } from './date-filter.component';
 
-describe('HighlightChartCardComponent', () => {
-  let component: HighlightChartCardComponent;
-  let fixture: ComponentFixture<HighlightChartCardComponent>;
+describe('DateFilterComponent', () => {
+  let component: DateFilterComponent;
+  let fixture: ComponentFixture<DateFilterComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ HighlightChartCardComponent ],
+      declarations: [ DateFilterComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HighlightChartCardComponent);
+    fixture = TestBed.createComponent(DateFilterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

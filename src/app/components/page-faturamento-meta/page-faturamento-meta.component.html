@@ -1,30 +1,16 @@
 <div class="ion-page" id="main-content">
- <ion-header translucent="true">
+  <ion-header translucent="true">
     <ion-toolbar>
       <app-header-geral headerTitle="Faturamento Real x Meta"></app-header-geral>
       
-      <ion-select
-        [(ngModel)]="selectedPeriodo"
-        (ionChange)="aplicarFiltro()"
-        interface="popover"
-        placeholder="Filtrar"
-        slot="end"  id="select-periodo"
-      >
-        <ion-select-option *ngFor="let ano of anosDisponiveis" [value]="ano">
-          {{ ano }}
-        </ion-select-option>
-        <ion-select-option *ngFor="let mes of mesesDisponiveis" [value]="mes.value">
-          {{ mes.label }}
-        </ion-select-option>
-      </ion-select>
-      
+      <ion-buttons slot="end">
+        <ion-button id="open-filter-modal">
+          <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+
     </ion-toolbar>
   </ion-header>
-
-
-
-
-
 
   <ion-content [fullscreen]="true">
     <div id="dashboard-container" *ngIf="!loading">
@@ -44,7 +30,7 @@
           ></app-chart-card>
         </ion-col>
       <ion-col>
-         <app-tabela [data]="faturamentoTotal" [columns]="colunasTotal"></app-tabela>
+          <app-tabela [data]="faturamentoTotal" [columns]="colunasTotal"></app-tabela>
       </ion-col>
         </ion-row>
       </ion-grid>
@@ -58,7 +44,7 @@
             [yAxisOptions]="graficosConfig[1].yAxisOptions"
             [valueFormatter]="brl"
           ></app-chart-card></ion-col>
-           <ion-col><app-chart-card
+            <ion-col><app-chart-card
             [title]="'Faturamento x Meta Filial Sul'"
             [seriesData]="graficosConfig[2].seriesData"
             [xAxisLabels]="graficosConfig[2].xAxisLabels"
@@ -69,4 +55,22 @@
       </ion-grid>
     </div>
   </ion-content>
+
+  <!-- O modal que conterá o componente de filtro de data -->
+  <ion-modal trigger="open-filter-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Filtrar por Período</ion-title>
+          <ion-buttons slot="end">
+            <ion-button onclick="dismissModal()">Fechar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <!-- Seu novo componente de filtro -->
+        <app-date-filter (filterSelected)="onFilterChange($event)"></app-date-filter>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </div>

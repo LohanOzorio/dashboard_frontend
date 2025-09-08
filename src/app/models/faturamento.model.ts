@@ -30,3 +30,15 @@ export interface FaturamentoMetaFull {
   dias_sem_compra?: string | null;
   id: number; 
 }
+
+export interface Cliente {
+  data_emissao: string;
+  cliente: string;
+  nome: string;
+  valor_nota: number;
+  servico: string;
+  cod_prod?: string;        
+  primeira_compra: string;
+  ultima_compra: string;
+  filial: string;
+}

@@ -13,7 +13,7 @@ import { FaturamentoAgrupado, MetaComparativo } from '../../models/comparativo.m
 import { GraficoConfig } from 'src/app/models/grafico-config.model';
 
 // C
-import { InfoCardComponent } from '../info-card/info-card.component';
+import { kpiCardComponent } from '../kpi-component/info-card.component';
 import { HeaderComponent } from '../header-geral/header-geral.component';
 
 // api
@@ -24,7 +24,7 @@ import { NaturezaCusto } from '../../models/naturezacusto.model';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, InfoCardComponent, HeaderComponent, ChartCardComponent],
+  imports: [CommonModule, IonicModule,HeaderComponent, ChartCardComponent],
   selector: 'page-home',
   templateUrl: './page-home.component.html',
   styleUrls: ['./page-home.component.scss'],
@@ -41,7 +41,7 @@ graficosConfig: GraficoConfig[] = [];
     this.carregarDados();
   }
 
-  // helper de moeda BRL p/ tooltip e eixos
+
   readonly brl = (v: number | string | null | undefined) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 })
       .format(Number(v ?? 0));
@@ -67,7 +67,7 @@ graficosConfig: GraficoConfig[] = [];
     this.destroyRef.onDestroy(() => sub.unsubscribe());
   }
 
-  // --- helpers ---
+  
   private toYYYYMM(d: string | Date): string {
     const dt = (typeof d === 'string') ? new Date(d) : d;
     const y = dt.getUTCFullYear();

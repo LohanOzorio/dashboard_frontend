@@ -1,0 +1,39 @@
+<ion-list>
+  <ion-item>
+    <ion-segment [(ngModel)]="filterType" (ionChange)="onFilterTypeChange()">
+      <ion-segment-button value="day">
+        <ion-label>Por Dia</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="month">
+        <ion-label>Por Mês</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="year">
+        <ion-label>Ano Todo</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-item>
+
+  <ion-item *ngIf="filterType === 'day'">
+    <ion-datetime
+      presentation="date"
+      min="2024-01-01"
+      (ionChange)="handleDateChange($event)"
+    ></ion-datetime>
+  </ion-item>
+
+  <ion-item *ngIf="filterType === 'month'">
+    <ion-datetime
+      presentation="month"
+      min="2024-01-01"
+      (ionChange)="handleMonthChange($event)"
+    ></ion-datetime>
+  </ion-item>
+
+  <ion-item *ngIf="filterType === 'year'">
+    <ion-datetime
+      presentation="year"
+      min="2024-01-01"
+      (ionChange)="handleYearChange($event)"
+    ></ion-datetime>
+  </ion-item>
+</ion-list>

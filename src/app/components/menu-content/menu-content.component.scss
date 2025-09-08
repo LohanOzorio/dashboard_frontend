@@ -6,3 +6,46 @@
 }
 
 
+/* tab-menu.component.scss ou tab-menu.component.css */
+
+/* Estilo do ion-content */
+ion-content {
+  --background: #f4f5f8; /* cor de fundo clara */
+  padding: 0 16px;
+}
+
+/* Estilo geral dos ion-items */
+ion-item {
+  --background: transparent; /* deixa transparente pra herdar do content */
+  --ion-item-color: #222; /* cor do texto */
+  font-weight: 500;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+/* Accordion header */
+ion-accordion::part(header) {
+  padding: 12px 16px;
+  margin-top: 8px;
+  font-weight: bold;
+  color: #333;
+ 
+}
+
+
+/* btn-menu estilizado dentro do accordion */
+btn-menu {
+  display: block;
+  padding: 10px 14px;
+  color: #fff;
+  text-align: left;
+  font-size: 14px;
+  
+}
+
+btn-menu:hover {
+  background: #d6d6d6;
+}
+
+
+

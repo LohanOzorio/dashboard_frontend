@@ -4,13 +4,13 @@ import { CommonModule } from '@angular/common';
 
 
 @Component({
-  selector: 'app-info-card',
+  selector: 'kpi-card',
   standalone: true,
   imports: [IonicModule, CommonModule],
   templateUrl: './info-card.component.html',
   styleUrls: ['./info-card.component.scss']
 })
-export class InfoCardComponent {
+export class kpiCardComponent {
   @Input() title!: string;
   @Input() value!: string;
   @Input() unit?: string;
